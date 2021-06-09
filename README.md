@@ -3,7 +3,10 @@
 
 ## React Client Application Routes
 
-- Route `/`: page content and purpose
+- Route `/`: Initial page, just two buttons to enter as a user or to login as an administrator
+- Route `/user`: Initial page for the user
+- Route `/admin`: Initial page for the administrator
+  
 - Route `/something/:param`: page content and purpose, param specification
 - ...
 
@@ -27,6 +30,9 @@
 - ...
 
 ## Main React Components
+
+- `Question` (in `Question.js`): single question components, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type)
+  
 
 - `ListOfSomething` (in `List.js`): component purpose and main functionality
 - `GreatButton` (in `GreatButton.js`): component purpose and main functionality
