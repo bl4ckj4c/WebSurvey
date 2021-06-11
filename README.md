@@ -12,6 +12,13 @@
 
 ## API Server
 
+- GET `/api/surveys`
+  - request parameters: nothing
+  - response body content: JSON of all surveys available
+- GET `/api/surveys/admin/:id`
+  - request parameters: id of the admin
+  - response body content: JSON of all surveys created by the admin with the id passed as parameter
+
 - POST `/api/login`
   - request parameters and request body content
   - response body content
@@ -25,13 +32,15 @@
 
 ## Database Tables
 
-- Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
-- ...
+-  Table `admin` - contains id username hash name
+-  Table `answer` - contains id surveyId type title answer
+-  Table `questions` - contains id surveyId type title answers min max flag
+-  Table `surveys` - contains id title owner
 
 ## Main React Components
 
-- `Question` (in `Question.js`): single question components, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type)
+- `Survey` (in `Survey.js`): single survey components
+- `Question` (in `Survey.js`): single question components, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`)
   
 
 - `ListOfSomething` (in `List.js`): component purpose and main functionality

@@ -1,6 +1,15 @@
-import {Card, CardDeck, Form, ListGroup, ListGroupItem} from "react-bootstrap";
+import {Card, Form, ListGroup, ListGroupItem, Button} from "react-bootstrap";
 import {useState} from "react";
-import {Button} from "bootstrap";
+
+function Survey(props) {
+    return (
+        <Card>
+            <Card.Body>
+                <Card.Title>{props.title}</Card.Title>
+            </Card.Body>
+        </Card>
+    );
+}
 
 function Question(props) {
     // Number of selected closed answers
@@ -24,8 +33,8 @@ function Question(props) {
                     )}
                 </ListGroup>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
-                    <Card.Link href="#">Up</Card.Link>
-                    <Card.Link href="#">Down</Card.Link>
+                    <Button variant="dark">Up</Button>{' '}
+                    <Button variant="dark">Down</Button>
                 </Card.Footer>
             </Card>
         );
@@ -44,12 +53,12 @@ function Question(props) {
                     <Form.Control as="textarea" rows={5} placeholder="Enter here your answer" />
                 </Form.Group>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
-                    <Card.Link href="#">Up</Card.Link>
-                    <Card.Link href="#">Down</Card.Link>
+                    <Button variant="dark">Up</Button>{' '}
+                    <Button variant="dark">Down</Button>
                 </Card.Footer>
             </Card>
         );
     }
 }
 
-export {Question};
+export {Survey, Question};
