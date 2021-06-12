@@ -48,3 +48,10 @@ app.get('/api/surveys', (req, res) => {
         .then(surveys => res.json(surveys))
         .catch(() => res.status(500).end());
 })
+
+app.get('/api/survey/:id', (req, res) => {
+    //if(req.isAuthenticated())
+    surveyDao.getAllQuestionsFromSurveyId(req.params.id)
+        .then(questions => res.json(questions))
+        .catch(() => res.status(500).end());
+})

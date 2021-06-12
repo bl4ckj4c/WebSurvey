@@ -23,33 +23,26 @@ exports.getAllSurveys = () => {
     });
 }
 
-exports.getAllSurveysById = (id) => {
+exports.getAllQuestionsFromSurveyId = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT id, title FROM surveys WHERE id = ?";
+        const sql = "SELECT id, title FROM surveys S, questions Q WHERE S.id = Q.surveyId AND id = ?";
         db.all(sql, [id], (err, rows) => {
             if(err) {
                 reject(err);
             }
             else {
-                const surveys = rows.map(r => ({id: r.id, title: r.title}));
-                resolve(surveys);
+                const questions = rows.map(r => ({
+                    id: r.id,
+                    type: r.type,
+                    title: r.title,
+                    answers: r.answers,
+                    min: r.min,
+                    max: r.max,
+                    mandatory: r.mandatory,
+                    position: r.position
+                }));
+                resolve(questions);
             }
         });
     });
 }
-
-/*
-exports.getAllAnswersBySurveyId = (id) => {
-    return new Promise(((resolve, reject) => {
-        const sql = "SELECT A.id, title FROM surveys S, answers A WHERE S.id = A.surveyId, S.id = ?";
-        db.all(sql, [id], (err, rows) => {
-            if(err) {
-                reject(err);
-            }
-            else {
-                const surveys = rows.map(r => ({id: r.id, title: r.title}));
-                resolve(surveys);
-            }
-        });
-    }));
-}*/

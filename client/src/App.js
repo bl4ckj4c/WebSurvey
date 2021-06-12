@@ -1,20 +1,25 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from './logo.svg';
 import './App.css';
-import {BrowserRouter as Router, Redirect, Route, Switch} from 'react-router-dom';
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import {useEffect, useState} from "react";
-import {CardDeck, Container, Navbar, Spinner} from "react-bootstrap";
+import {Card, Spinner} from "react-bootstrap";
 import {UserAdmin} from "./Login";
-import {Survey, Question} from "./Survey";
+import {Surveys, Questions} from "./Survey";
 import API from './API';
+import MyNavBar from "./MyNavBar";
 
 function App() {
     // At the beginning, no user is logged in
     const [loggedIn, setLoggedIn] = useState(false);
-    // User or admin?
-    const [userAdmin, setUserAdmin] = useState('user');
+    // Current logged admin
+    const [loggedAdmin, setLoggedAdmin] = useState('');
     // List of all available surveys
     const [surveys, setSurveys] = useState([]);
+    // Current survey selected by anonymous user
+    const [currSurvey, setCurrSurvey] = useState(0);
+    // List of all questions in the survey
+    const [questions, setQuestions] = useState([]);
     // Loading state for the home page
     const [loading, setLoading] = useState(true);
 
@@ -30,25 +35,24 @@ function App() {
             });
     }, []);
 
+    useEffect(() => {
+        if (currSurvey !== 0)
+            API.getAllQuestionsFromSurveyId(currSurvey)
+                .then(r => {
+                    setQuestions(r);
+                })
+                .catch(r => {
+                    setQuestions([]);
+                });
+    }, [currSurvey]);
+
     return (
         <Router>
             <div className="App">
                 <Switch>
-                    <Route path="/" render={() =>
+                    <Route exact path="/" render={() =>
                         <>
-                            <Navbar bg="primary" variant="dark" sticky="top">
-                                <Container>
-                                    <Navbar.Brand href="/" col>Surveys</Navbar.Brand>
-                                </Container>
-                                <Container>
-                                    <Navbar.Toggle/>
-                                    <Navbar.Collapse className="justify-content-end">
-                                        <Navbar.Text>
-                                            Signed in as: <a href="login">Anonymous</a>
-                                        </Navbar.Text>
-                                    </Navbar.Collapse>
-                                </Container>
-                            </Navbar>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                             {loading ?
                                 <>
                                     <Spinner animation="grow" variant="dark"/>
@@ -56,14 +60,39 @@ function App() {
                                     <Spinner animation="grow" variant="dark"/>
                                 </>
                                 :
-                                <CardDeck>
-                                    {surveys.map((survey, index) => <Survey title={survey.title}/>)}
-                                </CardDeck>}
+                                <Surveys surveys={surveys}/>
+                            }
                         </>
                     }/>
-                    {//<Route path="/user" render={() => </>}/>
-                        //<Route path="/admin" render={() => </>}/>
-                    }
+                    <Route exact path="/survey/:id" render={({match}) => {
+                        const id = parseInt(match.params.id, 10);
+                        if (isNaN(id) || id <= 0) {
+                            return (
+                                <>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <Card>
+                                        <Card.Body>
+                                            <Card.Title>Error</Card.Title>
+                                            <Card.Text>
+                                                The id passed is not a number or is less than 1
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </>
+                            );
+                        }
+                        else {
+                            setCurrSurvey(id);
+                            console.log(questions);
+                            return (
+                                <>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <Questions id={id}/>
+                                </>
+                            );
+                        }
+                    }}/>
+
                     {/*
                     <Route path="/user" render={() =>
                         <Row className="justify-content-center align-items-center">

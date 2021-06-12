@@ -3,8 +3,8 @@
 
 ## React Client Application Routes
 
-- Route `/`: Initial page, just two buttons to enter as a user or to login as an administrator
-- Route `/user`: Initial page for the user
+- Route `/`: Initial page for anonymous users
+- Route `/survey/:id`: page for the survey with the corresponding `id`
 - Route `/admin`: Initial page for the administrator
   
 - Route `/something/:param`: page content and purpose, param specification
@@ -15,6 +15,9 @@
 - GET `/api/surveys`
   - request parameters: nothing
   - response body content: JSON of all surveys available
+- GET `/api/survey/:id`
+  - request parameters: id of the survey
+  - response body content: JSON of all questions of the survey
 - GET `/api/surveys/admin/:id`
   - request parameters: id of the admin
   - response body content: JSON of all surveys created by the admin with the id passed as parameter
@@ -39,8 +42,9 @@
 
 ## Main React Components
 
-- `Survey` (in `Survey.js`): single survey components
-- `Question` (in `Survey.js`): single question components, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`)
+- `Surveys` (in `Survey.js`): component to generate a list of surveys (for the user side)
+- `QuestionS` (in `Survey.js`): component to generate the list of questions of a survey
+- `Question` (in `Survey.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`)
   
 
 - `ListOfSomething` (in `List.js`): component purpose and main functionality
