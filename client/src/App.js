@@ -39,7 +39,11 @@ function App() {
         if (currSurvey !== 0)
             API.getAllQuestionsFromSurveyId(currSurvey)
                 .then(r => {
-                    setQuestions(r);
+                    // Order the questions using the position field
+                    const sortedQ = r.sort((item1, item2) => {
+                        return item1.position - item2.position;
+                    });
+                    setQuestions(sortedQ);
                 })
                 .catch(r => {
                     setQuestions([]);
@@ -83,11 +87,10 @@ function App() {
                         }
                         else {
                             setCurrSurvey(id);
-                            console.log(questions);
                             return (
                                 <>
                                     <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
-                                    <Questions id={id}/>
+                                    <Questions id={id} questions={questions} setQuestions={setQuestions}/>
                                 </>
                             );
                         }

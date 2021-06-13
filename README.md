@@ -37,7 +37,7 @@
 
 -  Table `admin` - contains id username hash name
 -  Table `answer` - contains id surveyId type title answer
--  Table `questions` - contains id surveyId type title answers min max flag
+-  Table `questions` - contains id surveyId type title answers min max mandatory position
 -  Table `surveys` - contains id title owner
 
 ## Main React Components

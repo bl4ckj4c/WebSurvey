@@ -25,7 +25,7 @@ exports.getAllSurveys = () => {
 
 exports.getAllQuestionsFromSurveyId = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT id, title FROM surveys S, questions Q WHERE S.id = Q.surveyId AND id = ?";
+        const sql = "SELECT * FROM surveys S, questions Q WHERE S.id = Q.surveyId AND S.id = ?";
         db.all(sql, [id], (err, rows) => {
             if(err) {
                 reject(err);
