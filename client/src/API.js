@@ -24,6 +24,10 @@ async function getAllQuestionsFromSurveyId(id) {
     }
 }
 
+async function submitSingleAnswer(answer) {
 
-const API = {getAllSurveys, getAllQuestionsFromSurveyId};
+}
+
+
+const API = {getAllSurveys, getAllQuestionsFromSurveyId, submitSingleAnswer};
 export default API;

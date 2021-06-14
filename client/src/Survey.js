@@ -1,6 +1,7 @@
 import {Card, Form, ListGroup, ListGroupItem, Button, Container} from "react-bootstrap";
 import {useState} from "react";
-import {Link} from "react-router-dom";
+import {Link, Redirect} from "react-router-dom";
+import API from "./API";
 
 function swapQuestions(id, dir, questions, setQuestions) {
     const clonedQ = Object.assign({}, questions);
@@ -16,7 +17,7 @@ function swapQuestions(id, dir, questions, setQuestions) {
         if (currQ.pos === 1)
             return;
         // Swap the questions
-        otherQIndex = questions.findIndex(x => x.pos === currQ.pos-1);
+        otherQIndex = questions.findIndex(x => x.pos === currQ.pos - 1);
         tmp = clonedQ[currQIndex];
         clonedQ[currQIndex] = clonedQ[otherQIndex];
         clonedQ[otherQIndex] = tmp;
@@ -28,7 +29,7 @@ function swapQuestions(id, dir, questions, setQuestions) {
         if (currQ.pos === questions.length)
             return;
         // Swap the questions
-        otherQIndex = questions.findIndex(x => x.pos === currQ.pos+1);
+        otherQIndex = questions.findIndex(x => x.pos === currQ.pos + 1);
         tmp = clonedQ[currQIndex];
         clonedQ[currQIndex] = clonedQ[otherQIndex];
         clonedQ[otherQIndex] = tmp;
@@ -50,17 +51,17 @@ function Surveys(props) {
     );
 }
 
-function handleSubmit(event) {
-    console.log('submit')
-}
-
 function Questions(props) {
     const [validInput, setValidInput] = useState(false);
+    const [submitAnswers, setSubmitAnswers] = useState(false);
+
+    // The username is global because is needed by each question for the submit process
+    const [username, setUsername] = useState('');
 
     return (
         <Container className="justify-content-center align-items-center">
             <br/>
-            <UserNameField setValid={setValidInput}/>
+            <UserNameField setValid={setValidInput} username={username} setUsername={setUsername}/>
             <br/>
             {props.questions.map((question, index) =>
                 <>
@@ -68,15 +69,20 @@ function Questions(props) {
                               question={question}
                               questions={props.questions}
                               setQuestions={props.setQuestions}
-                              setValid={setValidInput}/>
+                              setValid={setValidInput}
+                              submitAnswers={submitAnswers}
+                              surveyId={props.id}
+                              username={username}
+                              setUsername={setUsername}
+                    />
                     <br/>
                 </>
             )}
             <br/>
             {validInput ?
-                <Button variant="dark" type="submit" onClick={handleSubmit}>Submit</Button>
+                <Button variant="dark" type="submit" onClick={() => setSubmitAnswers(true)}>Submit</Button>
                 :
-                <Button disabled variant="dark" type="submit" onClick={handleSubmit}>Submit</Button>
+                <Button disabled variant="dark" type="submit">Submit</Button>
             }
             <br/>
         </Container>
@@ -91,7 +97,40 @@ function Question(props) {
     // Check the validity on the answers for open questions
     const [validOpenAnswer, setValidOpenAnswer] = useState('init');
     const [openAnswer, setOpenAnswer] = useState('');
-    const [checkedMCQ, setCheckedMCQ] = useState([false, false, false, false, false, false, false, false, false, false]);
+    const [checkedMCQ0, setCheckedMCQ0] = useState(false);
+    const [checkedMCQ1, setCheckedMCQ1] = useState(false);
+    const [checkedMCQ2, setCheckedMCQ2] = useState(false);
+    const [checkedMCQ3, setCheckedMCQ3] = useState(false);
+    const [checkedMCQ4, setCheckedMCQ4] = useState(false);
+    const [checkedMCQ5, setCheckedMCQ5] = useState(false);
+    const [checkedMCQ6, setCheckedMCQ6] = useState(false);
+    const [checkedMCQ7, setCheckedMCQ7] = useState(false);
+    const [checkedMCQ8, setCheckedMCQ8] = useState(false);
+    const [checkedMCQ9, setCheckedMCQ9] = useState(false);
+    let checkedMCQ = [
+        checkedMCQ0,
+        checkedMCQ1,
+        checkedMCQ2,
+        checkedMCQ3,
+        checkedMCQ4,
+        checkedMCQ5,
+        checkedMCQ6,
+        checkedMCQ7,
+        checkedMCQ8,
+        checkedMCQ9
+    ];
+    let setCheckedMCQ = [
+        setCheckedMCQ0,
+        setCheckedMCQ1,
+        setCheckedMCQ2,
+        setCheckedMCQ3,
+        setCheckedMCQ4,
+        setCheckedMCQ5,
+        setCheckedMCQ6,
+        setCheckedMCQ7,
+        setCheckedMCQ8,
+        setCheckedMCQ9
+    ]
 
     // Check if a question mandatory is filled
     const [validMandatory, setValidMandatory] = useState('init');
@@ -103,8 +142,24 @@ function Question(props) {
 
     // Closed-answer question
     if (props.question.type === 'closed') {
-
         const answers = JSON.parse(props.question.answers);
+
+        // Submit the answer to this question
+        if (props.submitAnswers) {
+            let tmpAnswers = [];
+            for(let i = 0; i < answers.length; i++) {
+                if(checkedMCQ[i])
+                    tmpAnswers.push(answers[i]);
+            }
+                API.submitSingleAnswer({
+                    surveyId: props.surveyId,
+                    type: 'closed',
+                    answer: JSON.stringify(tmpAnswers)
+                })
+                    .then(() => <Redirect to="/"/>)
+                    .catch(() => <Redirect to="/"/>);
+        }
+
         return (
             <Card bg="light">
                 <Card.Body>
@@ -118,16 +173,7 @@ function Question(props) {
                                 <Form.Check variant='success'
                                             label={answer}
                                             onChange={(event) => {
-                                                const newState = event.target.checked;
-                                                setCheckedMCQ(oldCheckedMCQ => {
-                                                    oldCheckedMCQ.map((checked, pos) => {
-                                                        if(pos === index)
-                                                            checked = newState;
-                                                        //console.log(checked);
-                                                        console.log(checkedMCQ[index]);
-                                                        console.log(index);
-                                                    });
-                                                });
+                                                setCheckedMCQ[index](event.target.checked);
                                             }}
                                             checked={checkedMCQ[index]}/>
                             </Form.Group>
@@ -163,6 +209,17 @@ function Question(props) {
 
     // Open-ended question
     if (props.question.type === 'open') {
+        // Submit the answer to this question
+        if (props.submitAnswers) {
+            API.submitSingleAnswer({
+                surveyId: props.surveyId,
+                type: 'open',
+                answer: {openAnswer}
+            })
+                .then(() => <Redirect to="/"/>)
+                .catch(() => <Redirect to="/"/>);
+        }
+
         return (
             <Card bg="light">
                 <Card.Body>
@@ -218,7 +275,6 @@ function Question(props) {
 
 function UserNameField(props) {
     const [validUsername, setValidUsername] = useState('init');
-    const [username, setUsername] = useState('');
 
     return (
         <Card>
@@ -226,9 +282,9 @@ function UserNameField(props) {
                 <Card.Title>Username</Card.Title>
             </Card.Body>
             <Form.Group controlId="openAnswer">
-                <Form.Control value={username}
+                <Form.Control value={props.username}
                               onChange={(event) => {
-                                  setUsername(event.target.value);
+                                  props.setUsername(event.target.value);
 
                                   if (event.target.value === '') {
                                       setValidUsername('invalid');
