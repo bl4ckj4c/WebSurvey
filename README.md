@@ -43,8 +43,9 @@
 ## Main React Components
 
 - `Surveys` (in `Survey.js`): component to generate a list of surveys (for the user side)
-- `QuestionS` (in `Survey.js`): component to generate the list of questions of a survey
+- `Questions` (in `Survey.js`): component to generate the list of questions of a survey
 - `Question` (in `Survey.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`)
+- `UserNameField` (in `Survey.js`): username component, it handles the username field before actual questions
   
 
 - `ListOfSomething` (in `List.js`): component purpose and main functionality
