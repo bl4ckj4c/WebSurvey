@@ -1,9 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from './logo.svg';
 import './App.css';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
+import {BrowserRouter as Router, Link, Route, Switch} from 'react-router-dom';
 import {useEffect, useState} from "react";
-import {Card, Spinner} from "react-bootstrap";
+import {Card, CardDeck, Container, Spinner} from "react-bootstrap";
 import {UserAdmin} from "./Login";
 import {Surveys, Questions} from "./Survey";
 import API from './API';
@@ -84,8 +84,7 @@ function App() {
                                     </Card>
                                 </>
                             );
-                        }
-                        else {
+                        } else {
                             setCurrSurvey(id);
                             return (
                                 <>
@@ -96,21 +95,43 @@ function App() {
                         }
                     }}/>
 
-                    {/*
-                    <Route path="/user" render={() =>
-                        <Row className="justify-content-center align-items-center">
-                        <Question title="Test Closed"
-                                question={'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.'}
-                                type="closed"
-                                answers={['prova', 'prova2', 'prova3']}
-                        />{' '}
+                    <Route exact path="/admin" render={() =>
+                        <>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <br/>
+                            <Container className="justify-content-center align-items-center">
+                            <Link to="/admin/newSurvey">
+                                <Card bg="primary" text="light">
+                                    <Card.Body>
+                                        <Card.Title>Create a new survey</Card.Title>
+                                    </Card.Body>
+                                </Card>
+                            </Link>
+                            <br/>
+                            <Link to="/admin/viewSurveys">
+                                <Card bg="primary" text="light">
+                                    <Card.Body>
+                                        <Card.Title>See result of your surveys</Card.Title>
+                                    </Card.Body>
+                                </Card>
+                            </Link>
+                            </Container>
+                        </>
+                    }/>
 
-                        <Question title="Test Open"
-                                question={'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.'}
-                                type="open"
-                        />
-                        </Row>}/>
-                       */}
+                    <Route exact path="/admin/newSurvey" render={() =>
+                        <>
+                        <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                        <br/>
+                        </>
+                    }/>
+
+                    <Route exact path="/admin/viewSurveys" render={() =>
+                        <>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <br/>
+                        </>
+                    }/>
                 </Switch>
             </div>
         </Router>

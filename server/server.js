@@ -43,7 +43,6 @@ app.listen(port, () => {
 /* Surveys APIs */
 
 app.get('/api/surveys', (req, res) => {
-    //if(req.isAuthenticated())
     surveyDao.getAllSurveys()
         .then(surveys => res.json(surveys))
         .catch(() => res.status(500).end());
