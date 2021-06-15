@@ -12,10 +12,9 @@ exports.getAllSurveys = () => {
     return new Promise((resolve, reject) => {
         const sql = "SELECT id, title FROM surveys";
         db.all(sql, [], (err, rows) => {
-            if(err) {
+            if (err) {
                 reject(err);
-            }
-            else {
+            } else {
                 const surveys = rows.map(r => ({id: r.id, title: r.title}));
                 resolve(surveys);
             }
@@ -27,10 +26,9 @@ exports.getAllQuestionsFromSurveyId = (id) => {
     return new Promise((resolve, reject) => {
         const sql = "SELECT * FROM surveys S, questions Q WHERE S.id = Q.surveyId AND S.id = ?";
         db.all(sql, [id], (err, rows) => {
-            if(err) {
+            if (err) {
                 reject(err);
-            }
-            else {
+            } else {
                 const questions = rows.map(r => ({
                     id: r.id,
                     type: r.type,
@@ -43,6 +41,17 @@ exports.getAllQuestionsFromSurveyId = (id) => {
                 }));
                 resolve(questions);
             }
+        });
+    });
+}
+
+exports.submitAnswer = (surveyId, questionId, type, answer) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO answers(surveyId, questionId, type, answer) VALUES(?, ?, ? ,?)";
+        db.run(sql, [surveyId, questionId, type, answer], (err) => {
+            if(err)
+                reject(err);
+            resolve(true);
         });
     });
 }

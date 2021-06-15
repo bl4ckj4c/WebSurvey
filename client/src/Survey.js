@@ -94,6 +94,9 @@ function Question(props) {
     const [validMCQ, setValidMCQ] = useState('init');
     const [numberMCQChecked, setNumberMCQChecked] = useState(0);
 
+    // Redirect
+    const [redirect, setRedirect] = useState(false);
+
     // Check the validity on the answers for open questions
     const [validOpenAnswer, setValidOpenAnswer] = useState('init');
     const [openAnswer, setOpenAnswer] = useState('');
@@ -135,6 +138,9 @@ function Question(props) {
     // Check if a question mandatory is filled
     const [validMandatory, setValidMandatory] = useState('init');
 
+    if(redirect)
+        return (<Redirect to="/"/>);
+
     if (!props.question.mandatory) {
         setValidMandatory('valid');
         props.setValid(true);
@@ -149,15 +155,16 @@ function Question(props) {
             let tmpAnswers = [];
             for(let i = 0; i < answers.length; i++) {
                 if(checkedMCQ[i])
-                    tmpAnswers.push(answers[i]);
+                    tmpAnswers.push(i);
             }
                 API.submitSingleAnswer({
                     surveyId: props.surveyId,
+                    questionId: props.question.id,
                     type: 'closed',
                     answer: JSON.stringify(tmpAnswers)
                 })
-                    .then(() => <Redirect to="/"/>)
-                    .catch(() => <Redirect to="/"/>);
+                    .then(() => setRedirect(true))
+                    .catch(() => setRedirect(true));
         }
 
         return (
@@ -213,11 +220,12 @@ function Question(props) {
         if (props.submitAnswers) {
             API.submitSingleAnswer({
                 surveyId: props.surveyId,
+                questionId: props.question.id,
                 type: 'open',
-                answer: {openAnswer}
+                answer: openAnswer
             })
-                .then(() => <Redirect to="/"/>)
-                .catch(() => <Redirect to="/"/>);
+                .then(() => setRedirect(true))
+                .catch(() => setRedirect(true));
         }
 
         return (

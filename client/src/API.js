@@ -14,7 +14,7 @@ async function getAllSurveys() {
 
 async function getAllQuestionsFromSurveyId(id) {
     // call: GET /api/survey/:id
-    const response = await fetch(BASE_URL + "/survey/"+id);
+    const response = await fetch(BASE_URL + "/survey/" + id);
     const questionsJson = response.json();
     if (response.ok) {
         return questionsJson;
@@ -25,7 +25,22 @@ async function getAllQuestionsFromSurveyId(id) {
 }
 
 async function submitSingleAnswer(answer) {
-
+    // call: POST /api/submit
+    const response = await fetch(BASE_URL + "/submit", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(answer)
+        }
+    );
+    const questionsJson = response.json();
+    if (response.ok) {
+        return questionsJson;
+    } else {
+        // An object with the error coming from the server
+        throw questionsJson;
+    }
 }
 
 

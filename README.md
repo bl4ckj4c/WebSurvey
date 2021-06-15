@@ -21,6 +21,9 @@
 - GET `/api/surveys/admin/:id`
   - request parameters: id of the admin
   - response body content: JSON of all surveys created by the admin with the id passed as parameter
+- POST `/api/submit`
+  - request parameters: single answer given by a user
+  - response body content: nothing (just the code in the header)
 
 - POST `/api/login`
   - request parameters and request body content
@@ -36,7 +39,7 @@
 ## Database Tables
 
 -  Table `admin` - contains id username hash name
--  Table `answer` - contains id surveyId type title answer
+-  Table `answers` - contains id surveyId questionId type answer
 -  Table `questions` - contains id surveyId type title answers min max mandatory position
 -  Table `surveys` - contains id title owner
 

@@ -55,3 +55,9 @@ app.get('/api/survey/:id', (req, res) => {
         .then(questions => res.json(questions))
         .catch(() => res.status(500).end());
 })
+
+app.post('/api/submit', (req, res) => {
+    surveyDao.submitAnswer(req.body.surveyId, req.body.questionId, req.body.type, req.body.answer)
+        .then(() => res.status(201).end())
+        .catch(() => res.status(500).end());
+})
