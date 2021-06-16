@@ -1,7 +1,11 @@
-import {Card, Form, ListGroup, ListGroupItem, Button, Container} from "react-bootstrap";
+import {Card, Form, ListGroup, ListGroupItem, Button, Container, Modal} from "react-bootstrap";
 import {useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
+
+function handlerAddQuestion() {
+
+}
 
 function swapQuestions(id, dir, questions, setQuestions) {
     const clonedQ = Object.assign({}, questions);
@@ -50,3 +54,247 @@ function SurveysAdmin(props) {
         </ListGroup>
     );
 }
+
+function AddNewQuestionModal(props) {
+    // State to create the modal depending on closed or open question
+    const [openClose, setOpenClose] = useState('Open');
+    // State for the mandatory option
+    const [mandatory, setMandatory] = useState(false);
+
+    // States for the validity of the title
+    const [validTitle, setValidTitle] = useState('init');
+    const [title, setTitle] = useState('');
+
+    return (
+        <Modal show={props.show} onHide={props.handleClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>New Question</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
+                    <Form.Check
+                        type="switch"
+                        id="openclose-switch"
+                        label={openClose}
+                        onChange={(event) => {
+                            if (event.target.checked)
+                                setOpenClose('Closed');
+                            else
+                                setOpenClose('Open');
+                        }}
+                        checked={openClose !== 'Open'}
+                    />
+                    <br/>
+                    <Form.Group controlId="formQuestionTitle">
+                        <Form.Label>Question Title</Form.Label>
+                        <Form.Control type="text"
+                                      placeholder="Enter the title of the question"
+                                      value={title}
+                                      onChange={(event) => {
+                                          setTitle(event.target.value);
+
+                                          if (event.target.value === '')
+                                              setValidTitle('invalid');
+                                          else
+                                              setValidTitle('valid');
+                                      }}
+                                      isInvalid={validTitle === 'invalid'}/>
+                        <Form.Control.Feedback type='invalid'>
+                            Insert the title of the question please
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    {openClose === 'Closed' ?
+                        <>
+                            {/*<Form.Group controlId="formQuestionClosedAnswers">
+                                <Form.Label>Closed answer</Form.Label>
+                                <Form.Control type="text"
+                                              placeholder="Enter the title of the question"
+                                              isInvalid={validTitle === 'invalid'}/>
+                                <Form.Control.Feedback type='invalid'>
+                                    Insert your username please
+                                </Form.Control.Feedback>
+                            </Form.Group>*/}
+                        </>
+                        :
+                        <>
+                        </>
+                    }
+                    <br/>
+                    <Form.Check
+                        type="switch"
+                        id="mandatory-switch"
+                        label="Mandatory"
+                        onChange={(event) => {
+                            if (event.target.checked)
+                                setMandatory(true);
+                            else
+                                setMandatory(false);
+                        }}
+                        checked={mandatory}
+                    />
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="danger" onClick={props.handleClose}>
+                    Cancel
+                </Button>
+                <Button variant="success" onClick={props.handleClose}>
+                    Add Question
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+}
+
+function QuestionsAdmin(props) {
+    const [validInput, setValidInput] = useState(false);
+    const [submitSurvey, setSubmitSurvey] = useState(false);
+
+    // State and handler for the modal
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+    return (
+        <Container className="justify-content-center align-items-center">
+            <br/>
+            {props.questions.map((question, index) =>
+                <>
+                    <QuestionAdmin key={question.id}
+                                   question={question}
+                                   questions={props.questions}
+                                   setQuestions={props.setQuestions}
+                                   setValid={setValidInput}
+                                   submitSurvey={submitSurvey}
+                                   surveyId={props.id}
+                    />
+                    <br/>
+                </>
+            )}
+            <br/>
+            <Button variant="success" onClick={handleShow}>Add question</Button>{' '}
+            {validInput ?
+                <Button variant="dark" type="submit" onClick={() => setSubmitSurvey(true)}>Create</Button>
+                :
+                <Button disabled variant="dark" type="submit">Create</Button>
+            }
+            <br/>
+            <AddNewQuestionModal show={show} handleClose={handleClose} handleShow={handleShow}/>
+        </Container>
+    );
+}
+
+function QuestionAdmin(props) {
+    // Check the validity on the number of answers for closed questions
+    const [validMCQ, setValidMCQ] = useState('init');
+
+    // Check the validity on the answers for open questions
+    const [validOpenAnswer, setValidOpenAnswer] = useState('init');
+
+    // Check if a question mandatory is filled
+    const [validMandatory, setValidMandatory] = useState('init');
+
+
+    if (!props.question.mandatory) {
+        setValidMandatory('valid');
+    }
+
+    // Closed-answer question
+    if (props.question.type === 'closed') {
+        // Submit the question
+        if (props.submitSurvey) {
+            console.log("Submit closed question");
+        }
+
+        return (
+            <Card bg="light">
+                <Card.Body>
+                    <Card.Title>{props.question.title}</Card.Title>
+                    <Card.Text>{props.question.question}</Card.Text>
+                </Card.Body>
+                <ListGroup className="list-group-flush">
+                    {props.answers.map((answer, index) =>
+                        <ListGroupItem key={index}>
+                            <Form.Group controlId={"answer" + index}>
+                                <Form.Check variant='success' label={answer}/>
+                            </Form.Group>
+                        </ListGroupItem>
+                    )}
+                </ListGroup>
+                <Card.Footer className="text-muted" defaultActiveKey="#up">
+                    <Button variant="dark"
+                            onClick={() => swapQuestions(
+                                props.question.id,
+                                "up",
+                                props.questions,
+                                props.setQuestions
+                            )}
+                    >
+                        Up
+                    </Button>{' '}
+                    <Button variant="dark"
+                            onClick={() => swapQuestions(
+                                props.question.id,
+                                "down",
+                                props.questions,
+                                props.setQuestions
+                            )}
+                    >
+                        Down
+                    </Button>
+                </Card.Footer>
+            </Card>
+        );
+    }
+
+
+    // Open-ended question
+    if (props.question.type === 'open') {
+        // Submit the question
+        if (props.submitSurvey) {
+            console.log("Submit open question");
+        }
+
+        return (
+            <Card bg="light">
+                <Card.Body>
+                    <Card.Title>{props.question.title}</Card.Title>
+                </Card.Body>
+                <Form.Group controlId="openAnswer">
+                    <Form.Control value={"Open answer text field"}
+                                  isInvalid={validOpenAnswer === 'invalid'}
+                                  as="textarea"
+                                  rows={5}
+                                  placeholder="Enter here your answer"/>
+                    <Form.Control.Feedback type='invalid'>
+                        The answer cannot be empty, please fill the field
+                    </Form.Control.Feedback>
+                </Form.Group>
+                <Card.Footer className="text-muted" defaultActiveKey="#up">
+                    <Button variant="dark"
+                            onClick={() => swapQuestions(
+                                props.question.id,
+                                "up",
+                                props.questions,
+                                props.setQuestions
+                            )}
+                    >
+                        Up
+                    </Button>{' '}
+                    <Button variant="dark"
+                            onClick={() => swapQuestions(
+                                props.question.id,
+                                "down",
+                                props.questions,
+                                props.setQuestions
+                            )}
+                    >
+                        Down
+                    </Button>
+                </Card.Footer>
+            </Card>
+        );
+    }
+}
+
+export {SurveysAdmin, QuestionsAdmin};

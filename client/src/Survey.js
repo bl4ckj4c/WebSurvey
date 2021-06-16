@@ -153,28 +153,6 @@ function Question(props) {
                         </ListGroupItem>
                     )}
                 </ListGroup>
-                <Card.Footer className="text-muted" defaultActiveKey="#up">
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "up",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Up
-                    </Button>{' '}
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "down",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Down
-                    </Button>
-                </Card.Footer>
             </Card>
         );
     }
@@ -220,28 +198,6 @@ function Question(props) {
                         The answer cannot be empty, please fill the field
                     </Form.Control.Feedback>
                 </Form.Group>
-                <Card.Footer className="text-muted" defaultActiveKey="#up">
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "up",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Up
-                    </Button>{' '}
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "down",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Down
-                    </Button>
-                </Card.Footer>
             </Card>
         );
     }
@@ -251,7 +207,7 @@ function UserNameField(props) {
     const [validUsername, setValidUsername] = useState('init');
 
     return (
-        <Card>
+        <Card bg="light">
             <Card.Body>
                 <Card.Title>Username</Card.Title>
             </Card.Body>

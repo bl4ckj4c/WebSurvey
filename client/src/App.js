@@ -6,6 +6,7 @@ import {useEffect, useState} from "react";
 import {Card, CardDeck, Container, Spinner} from "react-bootstrap";
 import {UserAdmin} from "./Login";
 import {Surveys, Questions} from "./Survey";
+import {SurveysAdmin, QuestionsAdmin} from "./SurveyAdmin";
 import API from './API';
 import MyNavBar from "./MyNavBar";
 
@@ -18,8 +19,10 @@ function App() {
     const [surveys, setSurveys] = useState([]);
     // Current survey selected by anonymous user
     const [currSurvey, setCurrSurvey] = useState(0);
-    // List of all questions in the survey
+    // List of all questions in the view survey for the user
     const [questions, setQuestions] = useState([]);
+    // List of all questions in the survey for creation by admin
+    const [questionsAdmin, setQuestionsAdmin] = useState([]);
     // Loading state for the home page
     const [loading, setLoading] = useState(true);
 
@@ -123,6 +126,7 @@ function App() {
                         <>
                         <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                         <br/>
+                        <QuestionsAdmin questions={questionsAdmin} setQuestions={setQuestionsAdmin}/>
                         </>
                     }/>
 
