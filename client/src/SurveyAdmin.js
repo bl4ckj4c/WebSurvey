@@ -160,21 +160,19 @@ function QuestionsAdmin(props) {
     const [validInput, setValidInput] = useState(false);
     const [submitSurvey, setSubmitSurvey] = useState(false);
 
-    const [questions, setQuestions] = useState([]);
-
     // State and handler for the modal
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
     const handlerAddQuestion = (question) => {
+        question.position = props.questions.length;
+        if(question.type === 'Open')
+            question.type = 'open';
+        else if (question.type === 'Closed')
+            question.type = 'closed';
+        console.log(props.questions.length);
+        props.setQuestions((oldList) => [...oldList, question]);
         setShow(false);
-        question.position = questions.length;
-        console.log(questions.length);
-        setQuestions((oldList) => {
-            console.log(oldList);
-            return [...oldList, question];
-        });
     }
 
     return (
@@ -188,7 +186,6 @@ function QuestionsAdmin(props) {
                                    setQuestions={props.setQuestions}
                                    setValid={setValidInput}
                                    submitSurvey={submitSurvey}
-                                   surveyId={props.id}
                     />
                     <br/>
                 </>
@@ -214,26 +211,8 @@ function QuestionsAdmin(props) {
 }
 
 function QuestionAdmin(props) {
-    // Check the validity on the number of answers for closed questions
-    const [validMCQ, setValidMCQ] = useState('init');
-
-    // Check the validity on the answers for open questions
-    const [validOpenAnswer, setValidOpenAnswer] = useState('init');
-
-    // Check if a question mandatory is filled
-    const [validMandatory, setValidMandatory] = useState('init');
-
-
-    if (!props.question.mandatory) {
-        setValidMandatory('valid');
-    }
-
     // Closed-answer question
     if (props.question.type === 'closed') {
-        // Submit the question
-        if (props.submitSurvey) {
-            console.log("Submit closed question");
-        }
 
         return (
             <Card bg="light">
@@ -279,10 +258,6 @@ function QuestionAdmin(props) {
 
     // Open-ended question
     if (props.question.type === 'open') {
-        // Submit the question
-        if (props.submitSurvey) {
-            console.log("Submit open question");
-        }
 
         return (
             <Card bg="light">
