@@ -3,37 +3,47 @@ import {useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
 
-function swapQuestions(id, dir, questions, setQuestions) {
-    const clonedQ = Object.assign({}, questions);
+function swapQuestions(pos, dir, questions, setQuestions) {
 
-    const currQIndex = questions.findIndex(x => x.id === id);
-    const currQ = questions[currQIndex];
-    let otherQIndex = 0;
-    let tmp = null;
+    let currItem = questions[pos];
 
     // Move the current question up by one position
     if (dir === "up") {
         // The question is already at the top
-        if (currQ.pos === 1)
+        if (pos === 0)
             return;
         // Swap the questions
-        otherQIndex = questions.findIndex(x => x.pos === currQ.pos - 1);
-        tmp = clonedQ[currQIndex];
-        clonedQ[currQIndex] = clonedQ[otherQIndex];
-        clonedQ[otherQIndex] = tmp;
-        //setQuestions(clonedQ);
+        let otherItem = questions[pos - 1];
+        setQuestions(oldList => oldList.filter(q => q.position !== pos));
+        setQuestions(oldList => oldList.filter(q => q.position !== (pos - 1)));
+
+        currItem.position = pos-1;
+        otherItem.position = pos;
+
+        setQuestions(oldList => {
+            oldList.splice(pos-1, 0, currItem).join();
+            oldList.splice(pos, 0, otherItem).join();
+        });
     }
     // Move the current question down by one position
     else if (dir === "down") {
         // The question is already at the bottom
-        if (currQ.pos === questions.length)
+        if (pos === (questions.length - 1))
             return;
         // Swap the questions
-        otherQIndex = questions.findIndex(x => x.pos === currQ.pos + 1);
-        tmp = clonedQ[currQIndex];
-        clonedQ[currQIndex] = clonedQ[otherQIndex];
-        clonedQ[otherQIndex] = tmp;
-        //setQuestions(clonedQ);
+        let otherItem = questions[pos + 1];
+        setQuestions(oldList => oldList.filter(q => q.position !== pos));
+        setQuestions(oldList => oldList.filter(q => q.position !== (pos + 1)));
+
+        currItem.position = pos+1;
+        otherItem.position = pos;
+
+        setQuestions(oldList => {
+            oldList.splice(pos+1, 0, currItem);
+            oldList.join();
+            oldList.splice(pos, 0, otherItem);
+            oldList.join();
+        });
     }
 }
 
@@ -140,14 +150,14 @@ function AddNewQuestionModal(props) {
                     Cancel
                 </Button>
                 <Button variant="success" onClick={() => props.addQuestion({
-                        surveyId: -1,  // This is a placeholder, the actual value will be set once the survey is created
-                        type: openClose,
-                        title: title,
-                        answers: answers,
-                        min: min,
-                        max: max,
-                        mandatory: mandatory
-                    })
+                    surveyId: -1,  // This is a placeholder, the actual value will be set once the survey is created
+                    type: openClose,
+                    title: title,
+                    answers: answers,
+                    min: min,
+                    max: max,
+                    mandatory: mandatory
+                })
                 }>
                     Add Question
                 </Button>
@@ -166,11 +176,10 @@ function QuestionsAdmin(props) {
     const handleShow = () => setShow(true);
     const handlerAddQuestion = (question) => {
         question.position = props.questions.length;
-        if(question.type === 'Open')
+        if (question.type === 'Open')
             question.type = 'open';
         else if (question.type === 'Closed')
             question.type = 'closed';
-        console.log(props.questions.length);
         props.setQuestions((oldList) => [...oldList, question]);
         setShow(false);
     }
@@ -230,26 +239,58 @@ function QuestionAdmin(props) {
                     )}
                 </ListGroup>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "up",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Up
-                    </Button>{' '}
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "down",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Down
-                    </Button>
+                    {props.question.position === 0 ?
+                        <>
+                            <Button variant="dark"
+                                    onClick={() => swapQuestions(
+                                        props.question.position,
+                                        "up",
+                                        props.questions,
+                                        props.setQuestions
+                                    )}
+                                    disabled
+                            >
+                                Up
+                            </Button>{' '}
+                        </>
+                        :
+                        <>
+                            <Button variant="dark"
+                                    onClick={() => swapQuestions(
+                                        props.question.position,
+                                        "up",
+                                        props.questions,
+                                        props.setQuestions
+                                    )}
+                            >
+                                Up
+                            </Button>{' '}
+                        </>
+                    }
+                    {props.question.position === (props.questions.length-1) ?
+                        <Button variant="dark"
+                                onClick={() => swapQuestions(
+                                    props.question.position,
+                                    "down",
+                                    props.questions,
+                                    props.setQuestions
+                                )}
+                                disabled
+                        >
+                            Down
+                        </Button>
+                        :
+                        <Button variant="dark"
+                                onClick={() => swapQuestions(
+                                    props.question.position,
+                                    "down",
+                                    props.questions,
+                                    props.setQuestions
+                                )}
+                        >
+                            Down
+                        </Button>
+                    }
                 </Card.Footer>
             </Card>
         );
@@ -273,26 +314,58 @@ function QuestionAdmin(props) {
                     />
                 </Form.Group>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "up",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Up
-                    </Button>{' '}
-                    <Button variant="dark"
-                            onClick={() => swapQuestions(
-                                props.question.id,
-                                "down",
-                                props.questions,
-                                props.setQuestions
-                            )}
-                    >
-                        Down
-                    </Button>
+                    {props.question.position === 0 ?
+                        <>
+                            <Button variant="dark"
+                                    onClick={() => swapQuestions(
+                                        props.question.position,
+                                        "up",
+                                        props.questions,
+                                        props.setQuestions
+                                    )}
+                                    disabled
+                            >
+                                Up
+                            </Button>{' '}
+                        </>
+                        :
+                        <>
+                            <Button variant="dark"
+                                    onClick={() => swapQuestions(
+                                        props.question.position,
+                                        "up",
+                                        props.questions,
+                                        props.setQuestions
+                                    )}
+                            >
+                                Up
+                            </Button>{' '}
+                        </>
+                    }
+                    {props.question.position === (props.questions.length-1) ?
+                        <Button variant="dark"
+                                onClick={() => swapQuestions(
+                                    props.question.position,
+                                    "down",
+                                    props.questions,
+                                    props.setQuestions
+                                )}
+                                disabled
+                        >
+                            Down
+                        </Button>
+                        :
+                        <Button variant="dark"
+                                onClick={() => swapQuestions(
+                                    props.question.position,
+                                    "down",
+                                    props.questions,
+                                    props.setQuestions
+                                )}
+                        >
+                            Down
+                        </Button>
+                    }
                 </Card.Footer>
             </Card>
         );
