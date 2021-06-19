@@ -21,6 +21,9 @@
 - GET `/api/surveys/admin/:id`
   - request parameters: id of the admin
   - response body content: JSON of all surveys created by the admin with the id passed as parameter
+- GET `/api/groupId`
+  - request parameters: nothing
+  - response body content: next groupId to be used for submitting answers all together
 - POST `/api/submit`
   - request parameters: single answer given by a user
   - response body content: nothing (just the code in the header)
@@ -39,7 +42,7 @@
 ## Database Tables
 
 -  Table `admin` - contains id username hash name
--  Table `answers` - contains id surveyId questionId type answer
+-  Table `answers` - contains id groupId surveyId questionId type answer user
 -  Table `questions` - contains id surveyId type title answers min max mandatory position
 -  Table `surveys` - contains id title owner
 
@@ -49,11 +52,10 @@
 - `Questions` (in `Survey.js`): component to generate the list of questions of a survey
 - `Question` (in `Survey.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`)
 - `UserNameField` (in `Survey.js`): username component, it handles the username field before actual questions
-  
-
-- `ListOfSomething` (in `List.js`): component purpose and main functionality
-- `GreatButton` (in `GreatButton.js`): component purpose and main functionality
-- ...
+- `SurveysAdmin` (in `SurveyAdmin.js`): component to generate a list of surveys (for the user side)
+- `AddNewQuestionModal` (in `SurveyAdmin.js`): component to generate a modal to create a new question
+- `QuestionsAdmin` (in `SurveyAdmin.js`): component to generate the list of questions of a survey not yet published (used in the survey creation process)
+- `QuestionAdmin` (in `SurveyAdmin.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`); this component just shows how the question will be displayed to the users, but fields cannot be filled by the admin during the survey creation process
 
 (only _main_ components, minor ones may be skipped)
 

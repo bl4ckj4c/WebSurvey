@@ -3,10 +3,6 @@ import {useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
 
-function handlerAddQuestion() {
-
-}
-
 function swapQuestions(id, dir, questions, setQuestions) {
     const clonedQ = Object.assign({}, questions);
 
@@ -64,6 +60,11 @@ function AddNewQuestionModal(props) {
     // States for the validity of the title
     const [validTitle, setValidTitle] = useState('init');
     const [title, setTitle] = useState('');
+
+    // States for closed answers
+    const [answers, setAnswers] = useState([]);
+    const [min, setMin] = useState(0);
+    const [max, setMax] = useState(10);
 
     return (
         <Modal show={props.show} onHide={props.handleClose}>
@@ -138,7 +139,16 @@ function AddNewQuestionModal(props) {
                 <Button variant="danger" onClick={props.handleClose}>
                     Cancel
                 </Button>
-                <Button variant="success" onClick={props.handleClose}>
+                <Button variant="success" onClick={() => props.addQuestion({
+                        surveyId: -1,  // This is a placeholder, the actual value will be set once the survey is created
+                        type: openClose,
+                        title: title,
+                        answers: answers,
+                        min: min,
+                        max: max,
+                        mandatory: mandatory
+                    })
+                }>
                     Add Question
                 </Button>
             </Modal.Footer>
@@ -150,10 +160,22 @@ function QuestionsAdmin(props) {
     const [validInput, setValidInput] = useState(false);
     const [submitSurvey, setSubmitSurvey] = useState(false);
 
+    const [questions, setQuestions] = useState([]);
+
     // State and handler for the modal
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+
+    const handlerAddQuestion = (question) => {
+        setShow(false);
+        question.position = questions.length;
+        console.log(questions.length);
+        setQuestions((oldList) => {
+            console.log(oldList);
+            return [...oldList, question];
+        });
+    }
 
     return (
         <Container className="justify-content-center align-items-center">
@@ -179,7 +201,14 @@ function QuestionsAdmin(props) {
                 <Button disabled variant="dark" type="submit">Create</Button>
             }
             <br/>
-            <AddNewQuestionModal show={show} handleClose={handleClose} handleShow={handleShow}/>
+            <AddNewQuestionModal show={show}
+                                 setShow={setShow}
+                                 handleClose={handleClose}
+                                 handleShow={handleShow}
+                                 questions={props.questions}
+                                 setQuestions={props.setQuestions}
+                                 addQuestion={handlerAddQuestion}
+            />
         </Container>
     );
 }
@@ -216,7 +245,7 @@ function QuestionAdmin(props) {
                     {props.answers.map((answer, index) =>
                         <ListGroupItem key={index}>
                             <Form.Group controlId={"answer" + index}>
-                                <Form.Check variant='success' label={answer}/>
+                                <Form.Check disabled variant='success' label={answer}/>
                             </Form.Group>
                         </ListGroupItem>
                     )}
@@ -262,13 +291,11 @@ function QuestionAdmin(props) {
                 </Card.Body>
                 <Form.Group controlId="openAnswer">
                     <Form.Control value={"Open answer text field"}
-                                  isInvalid={validOpenAnswer === 'invalid'}
                                   as="textarea"
-                                  rows={5}
-                                  placeholder="Enter here your answer"/>
-                    <Form.Control.Feedback type='invalid'>
-                        The answer cannot be empty, please fill the field
-                    </Form.Control.Feedback>
+                                  rows={1}
+                                  placeholder="Enter here your answer"
+                                  disabled
+                    />
                 </Form.Group>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
                     <Button variant="dark"

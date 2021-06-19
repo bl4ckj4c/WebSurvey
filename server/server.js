@@ -55,8 +55,14 @@ app.get('/api/survey/:id', (req, res) => {
         .catch(() => res.status(500).end());
 })
 
+app.get('/api/groupId', (req, res) => {
+    surveyDao.getGroupId()
+        .then(id => res.json(id))
+        .catch(() => res.status(500).end());
+})
+
 app.post('/api/submit', (req, res) => {
-    surveyDao.submitAnswer(req.body.surveyId, req.body.questionId, req.body.type, req.body.answer)
+    surveyDao.submitAnswer(req.body.groupId, req.body.surveyId, req.body.questionId, req.body.type, req.body.answer, req.body.user)
         .then(() => res.status(201).end())
         .catch(() => res.status(500).end());
 })

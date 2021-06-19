@@ -1,5 +1,5 @@
-import {Card, Form, ListGroup, ListGroupItem, Button, Container} from "react-bootstrap";
-import {useState} from "react";
+import {Card, Form, ListGroup, ListGroupItem, Button, Container, Badge} from "react-bootstrap";
+import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
 
@@ -24,6 +24,16 @@ function Questions(props) {
     // The username is global because is needed by each question for the submit process
     const [username, setUsername] = useState('');
 
+    // GroupId used to submit answers all together
+    const [groupId, setGroupId] = useState(0);
+
+    // Obtain the groupId used to connect together answers to a survey session
+    useEffect(() => {
+        API.getGroupId()
+            .then((r) => setGroupId(r))
+            .catch(() => setGroupId(0));
+    }, []);
+
     return (
         <Container className="justify-content-center align-items-center">
             <br/>
@@ -40,6 +50,7 @@ function Questions(props) {
                               surveyId={props.id}
                               username={username}
                               setUsername={setUsername}
+                              groupId={groupId}
                     />
                     <br/>
                 </>
@@ -124,10 +135,12 @@ function Question(props) {
                     tmpAnswers.push(i);
             }
                 API.submitSingleAnswer({
+                    groupId: props.groupId,
                     surveyId: props.surveyId,
                     questionId: props.question.id,
                     type: 'closed',
-                    answer: JSON.stringify(tmpAnswers)
+                    answer: JSON.stringify(tmpAnswers),
+                    user: props.username
                 })
                     .then(() => setRedirect(true))
                     .catch(() => setRedirect(true));
@@ -136,7 +149,7 @@ function Question(props) {
         return (
             <Card bg="light">
                 <Card.Body>
-                    <Card.Title>{props.question.title}</Card.Title>
+                    <Card.Title>{props.question.title}{' '}<Badge variant="danger">Mandatory</Badge></Card.Title>
                     <Card.Text>{props.question.question}</Card.Text>
                 </Card.Body>
                 <ListGroup className="list-group-flush">
@@ -163,10 +176,12 @@ function Question(props) {
         // Submit the answer to this question
         if (props.submitAnswers) {
             API.submitSingleAnswer({
+                groupId: props.groupId,
                 surveyId: props.surveyId,
                 questionId: props.question.id,
                 type: 'open',
-                answer: openAnswer
+                answer: openAnswer,
+                user: props.username
             })
                 .then(() => setRedirect(true))
                 .catch(() => setRedirect(true));
@@ -175,14 +190,14 @@ function Question(props) {
         return (
             <Card bg="light">
                 <Card.Body>
-                    <Card.Title>{props.question.title}</Card.Title>
+                    <Card.Title>{props.question.title}{' '}<Badge variant="danger">Mandatory</Badge></Card.Title>
                 </Card.Body>
                 <Form.Group controlId="openAnswer">
                     <Form.Control value={openAnswer}
                                   onChange={(event) => {
                                       setOpenAnswer(event.target.value);
 
-                                      if (event.target.value === '') {
+                                      if (props.question.mandatory && event.target.value === '') {
                                           setValidOpenAnswer('invalid');
                                           props.setValid(false);
                                       } else {

@@ -24,6 +24,20 @@ async function getAllQuestionsFromSurveyId(id) {
     }
 }
 
+async function getGroupId() {
+    // call: GET /api/groupId
+    const response = await fetch(BASE_URL + "/groupId");
+    const nextGroupId = response.json();
+    if (response.ok) {
+        console.log(nextGroupId);
+        return nextGroupId;
+    } else {
+        // An object with the error coming from the server
+        console.log(nextGroupId);
+        throw nextGroupId;
+    }
+}
+
 async function submitSingleAnswer(answer) {
     // call: POST /api/submit
     const response = await fetch(BASE_URL + "/submit", {
@@ -44,5 +58,5 @@ async function submitSingleAnswer(answer) {
 }
 
 
-const API = {getAllSurveys, getAllQuestionsFromSurveyId, submitSingleAnswer};
+const API = {getAllSurveys, getAllQuestionsFromSurveyId, getGroupId, submitSingleAnswer};
 export default API;

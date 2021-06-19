@@ -45,10 +45,26 @@ exports.getAllQuestionsFromSurveyId = (id) => {
     });
 }
 
-exports.submitAnswer = (surveyId, questionId, type, answer) => {
+exports.getGroupId = () => {
     return new Promise((resolve, reject) => {
-        const sql = "INSERT INTO answers(surveyId, questionId, type, answer) VALUES(?, ?, ? ,?)";
-        db.run(sql, [surveyId, questionId, type, answer], (err) => {
+        const sql = "SELECT MAX(groupId) AS mid FROM answers";
+        db.get(sql, [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                if(rows.mid <= 0)
+                    resolve(1);
+                else
+                    resolve(rows.mid+1);
+            }
+        });
+    });
+}
+
+exports.submitAnswer = (groupId, surveyId, questionId, type, answer, user) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO answers(groupId, surveyId, questionId, type, answer, user) VALUES(?, ?, ?, ?, ? ,?)";
+        db.run(sql, [groupId, surveyId, questionId, type, answer, user], (err) => {
             if(err)
                 reject(err);
             resolve(true);
