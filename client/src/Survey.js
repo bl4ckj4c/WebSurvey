@@ -115,7 +115,7 @@ function Question(props) {
     // Check if a question mandatory is filled
     const [validMandatory, setValidMandatory] = useState('init');
 
-    if(redirect)
+    if (redirect)
         return (<Redirect to="/"/>);
 
     if (!props.question.mandatory) {
@@ -130,26 +130,36 @@ function Question(props) {
         // Submit the answer to this question
         if (props.submitAnswers) {
             let tmpAnswers = [];
-            for(let i = 0; i < answers.length; i++) {
-                if(checkedMCQ[i])
+            for (let i = 0; i < answers.length; i++) {
+                if (checkedMCQ[i])
                     tmpAnswers.push(i);
             }
-                API.submitSingleAnswer({
-                    groupId: props.groupId,
-                    surveyId: props.surveyId,
-                    questionId: props.question.id,
-                    type: 'closed',
-                    answer: JSON.stringify(tmpAnswers),
-                    user: props.username
-                })
-                    .then(() => setRedirect(true))
-                    .catch(() => setRedirect(true));
+            API.submitSingleAnswer({
+                groupId: props.groupId,
+                surveyId: props.surveyId,
+                questionId: props.question.id,
+                type: 'closed',
+                answer: JSON.stringify(tmpAnswers),
+                user: props.username
+            })
+                .then(() => setRedirect(true))
+                .catch(() => setRedirect(true));
         }
 
         return (
             <Card bg="light">
                 <Card.Body>
-                    <Card.Title>{props.question.title}{' '}<Badge variant="danger">Mandatory</Badge></Card.Title>
+                    <Card.Title>
+                        {props.question.title}
+                        {props.question.mandatory ?
+                            <>
+                                {' '}<Badge variant="danger">Mandatory</Badge>
+                            </>
+                            :
+                            <>
+                            </>
+                        }
+                    </Card.Title>
                     <Card.Text>{props.question.question}</Card.Text>
                 </Card.Body>
                 <ListGroup className="list-group-flush">
@@ -190,7 +200,17 @@ function Question(props) {
         return (
             <Card bg="light">
                 <Card.Body>
-                    <Card.Title>{props.question.title}{' '}<Badge variant="danger">Mandatory</Badge></Card.Title>
+                    <Card.Title>
+                        {props.question.title}
+                        {props.question.mandatory ?
+                            <>
+                                {' '}<Badge variant="danger">Mandatory</Badge>
+                            </>
+                            :
+                            <>
+                            </>
+                        }
+                    </Card.Title>
                 </Card.Body>
                 <Form.Group controlId="openAnswer">
                     <Form.Control value={openAnswer}

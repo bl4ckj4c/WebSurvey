@@ -57,6 +57,10 @@ async function submitSingleAnswer(answer) {
     }
 }
 
+async function createSurvey() {
 
-const API = {getAllSurveys, getAllQuestionsFromSurveyId, getGroupId, submitSingleAnswer};
+}
+
+
+const API = {getAllSurveys, getAllQuestionsFromSurveyId, getGroupId, submitSingleAnswer, createSurvey};
 export default API;

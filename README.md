@@ -41,10 +41,10 @@
 
 ## Database Tables
 
--  Table `admin` - contains id username hash name
--  Table `answers` - contains id groupId surveyId questionId type answer user
--  Table `questions` - contains id surveyId type title answers min max mandatory position
--  Table `surveys` - contains id title owner
+-  Table `admin` - contains `id` `username` `hash` `name`
+-  Table `answers` - contains `id` `groupId` `surveyId` `questionId` `type` `answer` `user`
+-  Table `questions` - contains `id` `surveyId` `type` `title` `answers` `min` `max` `mandatory` `position`
+-  Table `surveys` - contains `id` `title` `owner`
 
 ## Main React Components
 

@@ -1,49 +1,56 @@
-import {Card, Form, ListGroup, ListGroupItem, Button, Container, Modal} from "react-bootstrap";
-import {useState} from "react";
+import {
+    Card,
+    Form,
+    ListGroup,
+    ListGroupItem,
+    Button,
+    Container,
+    Modal,
+    Badge,
+    Col,
+    InputGroup,
+    FormControl, Row
+} from "react-bootstrap";
+import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
 
 function swapQuestions(pos, dir, questions, setQuestions) {
-
     let currItem = questions[pos];
 
     // Move the current question up by one position
     if (dir === "up") {
+        let otherItem = questions[pos - 1];
         // The question is already at the top
         if (pos === 0)
             return;
         // Swap the questions
-        let otherItem = questions[pos - 1];
+        currItem.position = pos - 1;
+        otherItem.position = pos;
         setQuestions(oldList => oldList.filter(q => q.position !== pos));
         setQuestions(oldList => oldList.filter(q => q.position !== (pos - 1)));
-
-        currItem.position = pos-1;
-        otherItem.position = pos;
-
-        setQuestions(oldList => {
-            oldList.splice(pos-1, 0, currItem).join();
-            oldList.splice(pos, 0, otherItem).join();
-        });
+        setQuestions(oldList => [...oldList, currItem]);
+        setQuestions(oldList => [...oldList, otherItem]);
+        setQuestions(oldList => oldList.sort((a, b) => {
+            return a.position - b.position;
+        }));
     }
     // Move the current question down by one position
     else if (dir === "down") {
+        let otherItem = questions[pos + 1];
         // The question is already at the bottom
         if (pos === (questions.length - 1))
             return;
         // Swap the questions
-        let otherItem = questions[pos + 1];
+        currItem.position = pos + 1;
+        otherItem.position = pos;
         setQuestions(oldList => oldList.filter(q => q.position !== pos));
         setQuestions(oldList => oldList.filter(q => q.position !== (pos + 1)));
-
-        currItem.position = pos+1;
-        otherItem.position = pos;
-
-        setQuestions(oldList => {
-            oldList.splice(pos+1, 0, currItem);
-            oldList.join();
-            oldList.splice(pos, 0, otherItem);
-            oldList.join();
-        });
+        setQuestions(oldList => [...oldList, currItem]);
+        setQuestions(oldList => [...oldList, otherItem]);
+        setQuestions(oldList => oldList.sort((a, b) => {
+            return a.position - b.position;
+        }));
     }
 }
 
@@ -67,14 +74,68 @@ function AddNewQuestionModal(props) {
     // State for the mandatory option
     const [mandatory, setMandatory] = useState(false);
 
+    // State for valid question
+    const [validQuestion, setValidQuestion] = useState(false);
+
     // States for the validity of the title
     const [validTitle, setValidTitle] = useState('init');
     const [title, setTitle] = useState('');
 
     // States for closed answers
     const [answers, setAnswers] = useState([]);
+    const [numAnswers, setNumAnswers] = useState(1);
     const [min, setMin] = useState(0);
     const [max, setMax] = useState(10);
+
+    // States for valid answers
+    const [checkedMCQ0, setCheckedMCQ0] = useState('init');
+    const [checkedMCQ1, setCheckedMCQ1] = useState('init');
+    const [checkedMCQ2, setCheckedMCQ2] = useState('init');
+    const [checkedMCQ3, setCheckedMCQ3] = useState('init');
+    const [checkedMCQ4, setCheckedMCQ4] = useState('init');
+    const [checkedMCQ5, setCheckedMCQ5] = useState('init');
+    const [checkedMCQ6, setCheckedMCQ6] = useState('init');
+    const [checkedMCQ7, setCheckedMCQ7] = useState('init');
+    const [checkedMCQ8, setCheckedMCQ8] = useState('init');
+    const [checkedMCQ9, setCheckedMCQ9] = useState('init');
+    let checkedMCQ = [
+        checkedMCQ0,
+        checkedMCQ1,
+        checkedMCQ2,
+        checkedMCQ3,
+        checkedMCQ4,
+        checkedMCQ5,
+        checkedMCQ6,
+        checkedMCQ7,
+        checkedMCQ8,
+        checkedMCQ9
+    ];
+    let setCheckedMCQ = [
+        setCheckedMCQ0,
+        setCheckedMCQ1,
+        setCheckedMCQ2,
+        setCheckedMCQ3,
+        setCheckedMCQ4,
+        setCheckedMCQ5,
+        setCheckedMCQ6,
+        setCheckedMCQ7,
+        setCheckedMCQ8,
+        setCheckedMCQ9
+    ]
+
+    useEffect(() => {
+        if (answers.length === 0)
+            setAnswers(oldList => [...oldList, '']);
+    }, []);
+
+    useEffect(() => {
+        setAnswers([]);
+        for (let i = 0; i < numAnswers; i++)
+            setAnswers(oldList => [...oldList, '']);
+        for (let i = 0; i < 10; i++)
+            setCheckedMCQ[i]('init');
+
+    }, [numAnswers]);
 
     return (
         <Modal show={props.show} onHide={props.handleClose}>
@@ -104,10 +165,13 @@ function AddNewQuestionModal(props) {
                                       onChange={(event) => {
                                           setTitle(event.target.value);
 
-                                          if (event.target.value === '')
+                                          if (event.target.value === '') {
                                               setValidTitle('invalid');
-                                          else
+                                              setValidQuestion(false);
+                                          } else {
                                               setValidTitle('valid');
+                                              setValidQuestion(true);
+                                          }
                                       }}
                                       isInvalid={validTitle === 'invalid'}/>
                         <Form.Control.Feedback type='invalid'>
@@ -115,60 +179,149 @@ function AddNewQuestionModal(props) {
                         </Form.Control.Feedback>
                     </Form.Group>
                     {openClose === 'Closed' ?
-                        <>
-                            {/*<Form.Group controlId="formQuestionClosedAnswers">
-                                <Form.Label>Closed answer</Form.Label>
-                                <Form.Control type="text"
-                                              placeholder="Enter the title of the question"
-                                              isInvalid={validTitle === 'invalid'}/>
-                                <Form.Control.Feedback type='invalid'>
-                                    Insert your username please
-                                </Form.Control.Feedback>
-                            </Form.Group>*/}
-                        </>
+                        <Form>
+                            <Form.Row>
+                                <Form.Group as={Col} controlId="totalAnswers">
+                                    <Form.Label>Number of answers</Form.Label>
+                                    <Form.Control as="select"
+                                                  value={numAnswers}
+                                                  onChange={(event) => setNumAnswers(parseInt(event.target.value))}>
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>5</option>
+                                        <option>6</option>
+                                        <option>7</option>
+                                        <option>8</option>
+                                        <option>9</option>
+                                        <option>10</option>
+                                    </Form.Control>
+                                </Form.Group>
+                                <Form.Group as={Col} controlId="minimumAnswers">
+                                    <Form.Label>Minimum answers</Form.Label>
+                                    <Form.Control as="select"
+                                                  value={min}
+                                                  onChange={(event) => {
+                                                      setMin(parseInt(event.target.value));
+                                                      if (parseInt(event.target.value) > 0)
+                                                          setMandatory(true);
+                                                      else
+                                                          setMandatory(false);
+                                                  }}>
+                                        <option>0</option>
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>5</option>
+                                        <option>6</option>
+                                        <option>7</option>
+                                        <option>8</option>
+                                        <option>9</option>
+                                        <option>10</option>
+                                    </Form.Control>
+                                </Form.Group>
+                                <Form.Group as={Col} controlId="maximumAnswers">
+                                    <Form.Label>Maximum answers</Form.Label>
+                                    <Form.Control as="select"
+                                                  value={max}
+                                                  onChange={(event) => setMax(parseInt(event.target.value))}>
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>5</option>
+                                        <option>6</option>
+                                        <option>7</option>
+                                        <option>8</option>
+                                        <option>9</option>
+                                        <option>10</option>
+                                    </Form.Control>
+                                </Form.Group>
+                            </Form.Row>
+                            <Container className="justify-content-center align-items-center">
+                                {answers.map((a, index) =>
+                                    <InputGroup className="mb-2 mr-sm-2">
+                                        <InputGroup.Prepend>
+                                            <InputGroup.Text><Form.Check type="checkbox"/></InputGroup.Text>
+                                        </InputGroup.Prepend>
+                                        <FormControl placeholder="Answer"
+                                                     value={a}
+                                                     onChange={(event) => {
+                                                         setAnswers(oldList => oldList.map((a, index2) =>
+                                                             index2 === index ? event.target.value : a
+                                                         ));
+
+                                                         if (event.target.value === '') {
+                                                             setCheckedMCQ[index]('invalid');
+                                                             setValidQuestion(false);
+                                                         } else {
+                                                             setCheckedMCQ[index]('valid');
+                                                             setValidQuestion(true);
+                                                         }
+                                                     }}
+                                                     isInvalid={checkedMCQ[index] === 'invalid'}/>
+                                        <Form.Control.Feedback type='invalid'>
+                                            The answer cannot be empty, please fill the field
+                                        </Form.Control.Feedback>
+                                    </InputGroup>
+                                )}
+                            </Container>
+                        </Form>
                         :
                         <>
                         </>
                     }
                     <br/>
-                    <Form.Check
-                        type="switch"
-                        id="mandatory-switch"
-                        label="Mandatory"
-                        onChange={(event) => {
-                            if (event.target.checked)
-                                setMandatory(true);
-                            else
-                                setMandatory(false);
-                        }}
-                        checked={mandatory}
-                    />
+                    {openClose === 'Open' ?
+                        <Form.Check
+                            type="switch"
+                            id="mandatory-switch"
+                            label="Mandatory"
+                            onChange={(event) => {
+                                if (event.target.checked)
+                                    setMandatory(true);
+                                else
+                                    setMandatory(false);
+                            }}
+                            checked={mandatory}
+                        />
+                        :
+                        <></>
+                    }
                 </Form>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="danger" onClick={props.handleClose}>
                     Cancel
                 </Button>
-                <Button variant="success" onClick={() => props.addQuestion({
-                    surveyId: -1,  // This is a placeholder, the actual value will be set once the survey is created
-                    type: openClose,
-                    title: title,
-                    answers: answers,
-                    min: min,
-                    max: max,
-                    mandatory: mandatory
-                })
-                }>
-                    Add Question
-                </Button>
+                {validQuestion ?
+                    <Button variant="success" onClick={() => {
+                        props.addQuestion({
+                            surveyId: -1,  // This is a placeholder, the actual value will be set once the survey is created
+                            type: openClose,
+                            title: title,
+                            answers: answers,
+                            min: min,
+                            max: max,
+                            mandatory: mandatory
+                        });
+                        props.setValidSurvey(true);
+                    }}>
+                        Add Question
+                    </Button>
+                    :
+                    <Button variant="success" disabled>
+                        Add Question
+                    </Button>}
             </Modal.Footer>
         </Modal>
     );
 }
 
 function QuestionsAdmin(props) {
-    const [validInput, setValidInput] = useState(false);
-    const [submitSurvey, setSubmitSurvey] = useState(false);
+    const [validSurvey, setValidSurvey] = useState(false);
 
     // State and handler for the modal
     const [show, setShow] = useState(false);
@@ -184,6 +337,20 @@ function QuestionsAdmin(props) {
         setShow(false);
     }
 
+    // Redirect
+    const [redirect, setRedirect] = useState(false);
+    // Create the new survey
+    const handlerSubmitSurvey = () => {
+        API.createSurvey()
+            .then(() => setRedirect(true))
+            .catch(() => setRedirect(true));
+    }
+
+    if (redirect) {
+        props.setQuestions([]);
+        return (<Redirect to="/admin"/>);
+    }
+
     return (
         <Container className="justify-content-center align-items-center">
             <br/>
@@ -193,16 +360,14 @@ function QuestionsAdmin(props) {
                                    question={question}
                                    questions={props.questions}
                                    setQuestions={props.setQuestions}
-                                   setValid={setValidInput}
-                                   submitSurvey={submitSurvey}
                     />
                     <br/>
                 </>
             )}
             <br/>
             <Button variant="success" onClick={handleShow}>Add question</Button>{' '}
-            {validInput ?
-                <Button variant="dark" type="submit" onClick={() => setSubmitSurvey(true)}>Create</Button>
+            {validSurvey ?
+                <Button variant="dark" type="submit" onClick={handlerSubmitSurvey}>Create</Button>
                 :
                 <Button disabled variant="dark" type="submit">Create</Button>
             }
@@ -214,6 +379,7 @@ function QuestionsAdmin(props) {
                                  questions={props.questions}
                                  setQuestions={props.setQuestions}
                                  addQuestion={handlerAddQuestion}
+                                 setValidSurvey={setValidSurvey}
             />
         </Container>
     );
@@ -226,11 +392,21 @@ function QuestionAdmin(props) {
         return (
             <Card bg="light">
                 <Card.Body>
-                    <Card.Title>{props.question.title}</Card.Title>
+                    <Card.Title>
+                        {props.question.title}
+                        {props.question.mandatory ?
+                            <>
+                                {' '}<Badge variant="danger">Mandatory</Badge>
+                            </>
+                            :
+                            <>
+                            </>
+                        }
+                    </Card.Title>
                     <Card.Text>{props.question.question}</Card.Text>
                 </Card.Body>
                 <ListGroup className="list-group-flush">
-                    {props.answers.map((answer, index) =>
+                    {props.question.answers.map((answer, index) =>
                         <ListGroupItem key={index}>
                             <Form.Group controlId={"answer" + index}>
                                 <Form.Check disabled variant='success' label={answer}/>
@@ -267,7 +443,7 @@ function QuestionAdmin(props) {
                             </Button>{' '}
                         </>
                     }
-                    {props.question.position === (props.questions.length-1) ?
+                    {props.question.position === (props.questions.length - 1) ?
                         <Button variant="dark"
                                 onClick={() => swapQuestions(
                                     props.question.position,
@@ -303,7 +479,17 @@ function QuestionAdmin(props) {
         return (
             <Card bg="light">
                 <Card.Body>
-                    <Card.Title>{props.question.title}</Card.Title>
+                    <Card.Title>
+                        {props.question.title}
+                        {props.question.mandatory ?
+                            <>
+                                {' '}<Badge variant="danger">Mandatory</Badge>
+                            </>
+                            :
+                            <>
+                            </>
+                        }
+                    </Card.Title>
                 </Card.Body>
                 <Form.Group controlId="openAnswer">
                     <Form.Control value={"Open answer text field"}
@@ -342,7 +528,7 @@ function QuestionAdmin(props) {
                             </Button>{' '}
                         </>
                     }
-                    {props.question.position === (props.questions.length-1) ?
+                    {props.question.position === (props.questions.length - 1) ?
                         <Button variant="dark"
                                 onClick={() => swapQuestions(
                                     props.question.position,
