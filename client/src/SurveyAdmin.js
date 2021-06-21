@@ -55,17 +55,27 @@ function swapQuestions(pos, dir, questions, setQuestions) {
 }
 
 function SurveysAdmin(props) {
-    return (
-        <ListGroup>
-            {props.surveys.map((survey, index) =>
-                <Link to={"/admin/survey/" + survey.id} key={survey.id}>
-                    <ListGroup.Item action>
-                        {survey.title}
-                    </ListGroup.Item>
-                </Link>
-            )}
-        </ListGroup>
-    );
+    API.getSurveyByIdForAdmin(props.admin)
+        .then((surveys) => {
+            return (
+                <ListGroup>
+                    {surveys.map((survey, index) =>
+                        <Link to={"/admin/survey/" + survey.id} key={survey.id}>
+                            <ListGroup.Item action>
+                                {survey.title}
+                            </ListGroup.Item>
+                        </Link>
+                    )}
+                </ListGroup>
+            );
+        })
+        .catch(() => {
+            return (
+                <ListGroup>
+                    Error
+                </ListGroup>
+            );
+        });
 }
 
 function AddNewQuestionModal(props) {
@@ -322,6 +332,8 @@ function AddNewQuestionModal(props) {
 
 function QuestionsAdmin(props) {
     const [validSurvey, setValidSurvey] = useState(false);
+    const [surveyTitle, setSurveyTitle] = useState('');
+    const [validSurveyTitle, setValidSurveyTitle] = useState('init');
 
     // State and handler for the modal
     const [show, setShow] = useState(false);
@@ -341,7 +353,7 @@ function QuestionsAdmin(props) {
     const [redirect, setRedirect] = useState(false);
     // Create the new survey
     const handlerSubmitSurvey = () => {
-        API.createSurvey()
+        API.createSurvey(surveyTitle, props.questions, props.owner)
             .then(() => setRedirect(true))
             .catch(() => setRedirect(true));
     }
@@ -353,6 +365,12 @@ function QuestionsAdmin(props) {
 
     return (
         <Container className="justify-content-center align-items-center">
+            <br/>
+            <SurveyTitleField surveyTitle={surveyTitle}
+                              setSurveyTitle={setSurveyTitle}
+                              validSurveyTitle={validSurveyTitle}
+                              setValidSurveyTitle={setValidSurveyTitle}
+                              setValid={setValidSurvey}/>
             <br/>
             {props.questions.map((question, index) =>
                 <>
@@ -382,6 +400,36 @@ function QuestionsAdmin(props) {
                                  setValidSurvey={setValidSurvey}
             />
         </Container>
+    );
+}
+
+function SurveyTitleField(props) {
+    return (
+        <Card bg="light">
+            <Card.Body>
+                <Card.Title>Survey Title</Card.Title>
+            </Card.Body>
+            <Form.Group controlId="surveyTitle">
+                <Form.Control value={props.surveyTitle}
+                              onChange={(event) => {
+                                  props.setSurveyTitle(event.target.value);
+
+                                  if (event.target.value === '') {
+                                      props.setValidSurveyTitle('invalid');
+                                      props.setValid(false);
+                                  } else {
+                                      props.setValidSurveyTitle('valid');
+                                      props.setValid(true);
+                                  }
+                              }}
+                              isInvalid={props.setValidSurveyTitle === 'invalid'}
+                              type="text"
+                              placeholder="Enter here the title of the survey"/>
+                <Form.Control.Feedback type='invalid'>
+                    Please insert the title of the survey
+                </Form.Control.Feedback>
+            </Form.Group>
+        </Card>
     );
 }
 

@@ -26,7 +26,10 @@
   - response body content: next groupId to be used for submitting answers all together
 - POST `/api/submit`
   - request parameters: single answer given by a user
-  - response body content: nothing (just the code in the header)
+  - response body content: nothing (just the HTTP code in the header)
+- POST `/api/createSurvey`
+  - request parameters: JSON of all questions of the new survey
+  - response body content: nothing (just the HTTP code in the header)
 
 - POST `/api/login`
   - request parameters and request body content
@@ -56,6 +59,7 @@
 - `AddNewQuestionModal` (in `SurveyAdmin.js`): component to generate a modal to create a new question
 - `QuestionsAdmin` (in `SurveyAdmin.js`): component to generate the list of questions of a survey not yet published (used in the survey creation process)
 - `QuestionAdmin` (in `SurveyAdmin.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`); this component just shows how the question will be displayed to the users, but fields cannot be filled by the admin during the survey creation process
+- `SurveyTitleField` (in `SurveyAdmin.js`): survey title component, it handles the survey title field before actual questions
 
 (only _main_ components, minor ones may be skipped)
 

@@ -14,7 +14,7 @@ function App() {
     // At the beginning, no user is logged in
     const [loggedIn, setLoggedIn] = useState(false);
     // Current logged admin
-    const [loggedAdmin, setLoggedAdmin] = useState('');
+    const [loggedAdmin, setLoggedAdmin] = useState(1);
     // List of all available surveys
     const [surveys, setSurveys] = useState([]);
     // Current survey selected by anonymous user
@@ -126,7 +126,7 @@ function App() {
                         <>
                         <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                         <br/>
-                        <QuestionsAdmin questions={questionsAdmin} setQuestions={setQuestionsAdmin}/>
+                        <QuestionsAdmin questions={questionsAdmin} setQuestions={setQuestionsAdmin} owner={loggedAdmin}/>
                         </>
                     }/>
 
@@ -134,6 +134,7 @@ function App() {
                         <>
                             <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                             <br/>
+                            <SurveysAdmin admin={loggedAdmin}/>
                         </>
                     }/>
                 </Switch>

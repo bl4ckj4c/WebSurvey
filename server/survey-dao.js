@@ -52,10 +52,10 @@ exports.getGroupId = () => {
             if (err) {
                 reject(err);
             } else {
-                if(rows.mid <= 0)
+                if (rows.mid <= 0)
                     resolve(1);
                 else
-                    resolve(rows.mid+1);
+                    resolve(rows.mid + 1);
             }
         });
     });
@@ -63,11 +63,60 @@ exports.getGroupId = () => {
 
 exports.submitAnswer = (groupId, surveyId, questionId, type, answer, user) => {
     return new Promise((resolve, reject) => {
-        const sql = "INSERT INTO answers(groupId, surveyId, questionId, type, answer, user) VALUES(?, ?, ?, ?, ? ,?)";
+        const sql = "INSERT INTO answers(groupId, surveyId, questionId, type, answer, user) VALUES(?, ?, ?, ?, ?, ?)";
         db.run(sql, [groupId, surveyId, questionId, type, answer, user], (err) => {
-            if(err)
+            if (err)
                 reject(err);
             resolve(true);
+        });
+    });
+}
+
+exports.createSurvey = (title, questions, owner) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO surveys(title, owner) VALUES(?, ?)";
+        db.get(sql, [title, owner], (err) => {
+            if (err)
+                reject(err);
+            const sql2 = "SELECT MAX(id) AS mid FROM surveys WHERE owner = ?";
+            db.get(sql2, [owner], (err, row) => {
+                if (err)
+                    reject(err);
+                resolve(row.mid);
+            });
+        });
+    });
+}
+
+exports.addQuestionsToSurvey = (surveyId, question) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO questions(surveyId, type, title, answers, min, max, mandatory, position) VALUES(?, ?, ?, ? , ?, ?, ?, ?)";
+        db.run(sql, [surveyId,
+                question.type,
+                question.title,
+                JSON.stringify(question.answers),
+                question.min,
+                question.max,
+                question.mandatory,
+                question.position],
+            (err) => {
+                if (err)
+                    reject(err);
+                resolve(true);
+            });
+    });
+}
+
+exports.getAllSurveysByAdminId = (owner) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT id, title FROM surveys WHERE owner = ?";
+        db.all(sql, [owner], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                const surveys = rows.map(r => ({id: r.id, title: r.title}));
+                resolve(surveys);
+            }
         });
     });
 }

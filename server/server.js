@@ -66,3 +66,23 @@ app.post('/api/submit', (req, res) => {
         .then(() => res.status(201).end())
         .catch(() => res.status(500).end());
 })
+
+app.post('/api/createSurvey', async (req, res) => {
+    let responseCode = 201;
+
+    let title = req.body.title;
+    let questions = req.body.questions;
+    let owner = req.body.owner;
+    // Create the new survey and get the auto-generated id back
+    let surveyId = await surveyDao.createSurvey(title, questions, owner);
+    // Add one question at a time into the database for the corresponding survey
+    questions.forEach(question => surveyDao.addQuestionsToSurvey(surveyId, question).catch(() => responseCode = 500));
+
+    res.status(responseCode).end();
+})
+
+app.get('/api/surveys/admin/:id', (req, res) => {
+    surveyDao.getAllSurveysByAdminId(req.params.id)
+        .then(surveys => res.json(surveys))
+        .catch(() => res.status(500).end());
+})
