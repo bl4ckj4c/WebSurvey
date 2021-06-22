@@ -86,3 +86,9 @@ app.get('/api/surveys/admin/:id', (req, res) => {
         .then(surveys => res.json(surveys))
         .catch(() => res.status(500).end());
 })
+
+app.get('/api/survey/:surveyId/admin/:adminId', (req, res) => {
+    surveyDao.getAllAnswersFromSurveyId(req.params.surveyId, req.params.adminId)
+        .then(surveys => res.json(surveys))
+        .catch(() => res.status(500).end());
+})

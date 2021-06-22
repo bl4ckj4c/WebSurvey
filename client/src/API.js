@@ -90,17 +90,17 @@ async function getSurveyByIdForAdmin(id) {
     }
 }
 
-async function geetSurveyByIdForAdmin(id) {
-    // call: GET /api/surveys/admin/:id
-    const response = await fetch(BASE_URL + "/surveys/admin/" + id);
-    const surveysJson = response.json();
+async function getAllAnswersBySurveyId(surveyId, adminId) {
+    // call: GET /api/survey/:surveyId/admin/:adminId
+    const response = await fetch(BASE_URL + "/survey/" + surveyId + "/admin/" + adminId);
+    const surveyJson = response.json();
     if (response.ok) {
-        return surveysJson;
+        return surveyJson;
     } else {
         // An object with the error coming from the server
-        throw surveysJson;
+        throw surveyJson;
     }
 }
 
-const API = {getAllSurveys, getAllQuestionsFromSurveyId, getGroupId, submitSingleAnswer, createSurvey, getSurveyByIdForAdmin};
+const API = {getAllSurveys, getAllQuestionsFromSurveyId, getGroupId, submitSingleAnswer, createSurvey, getSurveyByIdForAdmin, getAllAnswersBySurveyId};
 export default API;

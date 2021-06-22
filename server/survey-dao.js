@@ -120,3 +120,29 @@ exports.getAllSurveysByAdminId = (owner) => {
         });
     });
 }
+
+exports.getAllAnswersFromSurveyId = (surveyId, adminId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * " +
+            "FROM surveys S, answers A, questions Q " +
+            "WHERE S.id = A.surveyId AND S.id = Q.surveyId AND S.id = ? AND S.owner = ?";
+        db.all(sql, [surveyId, adminId], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                const answers = rows.map(r => ({
+                    res: r
+                    /*id: r.id,
+                    type: r.type,
+                    title: r.title,
+                    answers: r.answers,
+                    min: r.min,
+                    max: r.max,
+                    mandatory: r.mandatory,
+                    position: r.position*/
+                }));
+                resolve(answers);
+            }
+        });
+    });
+}

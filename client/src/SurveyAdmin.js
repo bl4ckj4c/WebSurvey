@@ -616,14 +616,12 @@ function ViewAnswersOneSurvey(props) {
     const [answers, setAnswers] = useState([]);
 
     useEffect(() => {
-        API.get()
+        API.getAllAnswersBySurveyId(props.surveyId, props.loggedAdmin)
             .then(r => {
-                setSurveys(r);
-                setLoading(false);
+                console.log(r);
             })
             .catch(r => {
-                setSurveys([]);
-                setLoading(false);
+                console.log(r);
             });
     }, []);
 

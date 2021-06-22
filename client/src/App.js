@@ -136,8 +136,8 @@ function App() {
                         </>
                     }/>
 
-                    <Route exact path="/admin/survey/:id" render={({match}) => {
-                        const id = parseInt(match.params.id, 10);
+                    <Route exact path="/admin/survey/:surveyId" render={({match}) => {
+                        const id = parseInt(match.params.surveyId, 10);
                         if (isNaN(id) || id <= 0) {
                             return (
                                 <>

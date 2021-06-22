@@ -21,6 +21,9 @@
 - GET `/api/surveys/admin/:id`
   - request parameters: id of the admin
   - response body content: JSON of all surveys created by the admin with the id passed as parameter
+- GET `/api/survey/:surveyId/admin/:adminId`
+  - request parameters: id of the survey and id of the admin
+  - response body content: JSON of all answers of the survey with id passed as parameter owned by the admin with the id passed as parameter
 - GET `/api/groupId`
   - request parameters: nothing
   - response body content: next groupId to be used for submitting answers all together
