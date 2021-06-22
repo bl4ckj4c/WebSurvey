@@ -1,4 +1,4 @@
-import {Card, Form, ListGroup, ListGroupItem, Button, Container, Badge} from "react-bootstrap";
+import {Card, Form, ListGroup, ListGroupItem, Button, Container, Badge, Alert} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
@@ -70,6 +70,7 @@ function Question(props) {
     // Check the validity on the number of answers for closed questions
     const [validMCQ, setValidMCQ] = useState('init');
     const [numberMCQChecked, setNumberMCQChecked] = useState(0);
+    const [validNumberMCQChecked, setValidNumberMCQChecked] = useState('init');
 
     // Redirect
     const [redirect, setRedirect] = useState(false);
@@ -118,11 +119,6 @@ function Question(props) {
     if (redirect)
         return (<Redirect to="/"/>);
 
-    if (!props.question.mandatory) {
-        setValidMandatory('valid');
-        props.setValid(true);
-    }
-
     // Closed-answer question
     if (props.question.type === 'closed') {
         const answers = JSON.parse(props.question.answers);
@@ -150,8 +146,9 @@ function Question(props) {
             <Card bg="light">
                 <Card.Body>
                     <Card.Title>
+                        {console.log(props.question.mandatory)}
                         {props.question.title}
-                        {props.question.mandatory ?
+                        {props.question.mandatory === 1 ?
                             <>
                                 {' '}<Badge variant="danger">Mandatory</Badge>
                             </>
@@ -160,7 +157,8 @@ function Question(props) {
                             </>
                         }
                     </Card.Title>
-                    <Card.Text>{props.question.question}</Card.Text>
+                    <Card.Text>Minimum answers: {props.question.min}</Card.Text>
+                    <Card.Text>Maximum answers: {props.question.max}</Card.Text>
                 </Card.Body>
                 <ListGroup className="list-group-flush">
                     {answers.map((answer, index) =>
@@ -170,12 +168,33 @@ function Question(props) {
                                             label={answer}
                                             onChange={(event) => {
                                                 setCheckedMCQ[index](event.target.checked);
+                                                let currChecked = numberMCQChecked;
+                                                if (event.target.checked) {
+                                                    currChecked++;
+                                                    setNumberMCQChecked(old => old + 1);
+                                                } else {
+                                                    currChecked--;
+                                                    setNumberMCQChecked(old => old - 1);
+                                                }
+                                                if (currChecked < props.question.min || currChecked > props.question.max) {
+                                                    setValidMCQ('invalid');
+                                                    props.setValid(false);
+                                                }
+                                                else {
+                                                    setValidMCQ('valid');
+                                                    props.setValid(true);
+                                                }
                                             }}
                                             checked={checkedMCQ[index]}/>
                             </Form.Group>
                         </ListGroupItem>
                     )}
                 </ListGroup>
+                {validMCQ === 'invalid' ?
+                    <Alert variant="danger">Please respect minimum and maximum parameters</Alert>
+                    :
+                    <></>
+                }
             </Card>
         );
     }
@@ -202,7 +221,7 @@ function Question(props) {
                 <Card.Body>
                     <Card.Title>
                         {props.question.title}
-                        {props.question.mandatory ?
+                        {props.question.mandatory === 1 ?
                             <>
                                 {' '}<Badge variant="danger">Mandatory</Badge>
                             </>
@@ -228,6 +247,7 @@ function Question(props) {
                                   isInvalid={validOpenAnswer === 'invalid'}
                                   as="textarea"
                                   rows={5}
+                                  maxlength={200}
                                   placeholder="Enter here your answer"/>
                     <Form.Control.Feedback type='invalid'>
                         The answer cannot be empty, please fill the field
