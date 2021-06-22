@@ -19,6 +19,8 @@ function Surveys(props) {
 
 function Questions(props) {
     const [validInput, setValidInput] = useState(false);
+    const [validInputs, setValidInputs] = useState([]);
+    const [allInputsValid, setAllInputsValid] = useState(false);
     const [submitAnswers, setSubmitAnswers] = useState(false);
 
     // The username is global because is needed by each question for the submit process
@@ -33,6 +35,20 @@ function Questions(props) {
             .then((r) => setGroupId(r))
             .catch(() => setGroupId(0));
     }, []);
+
+    // Initialize the state array for valid inputs
+    useEffect(() => {
+        setValidInputs([]);
+        for(let i = 0; i < props.questions.length; i++)
+            setValidInputs(oldList => [...oldList, false]);
+    }, []);
+
+    // Check if all inputs are valid
+    useEffect(() => {
+        let check = true;
+        for(const item of validInputs)
+            setAllInputsValid(old => old && item);
+    }, [validInput]);
 
     return (
         <Container className="justify-content-center align-items-center">
@@ -56,7 +72,7 @@ function Questions(props) {
                 </>
             )}
             <br/>
-            {validInput ?
+            {allInputsValid ?
                 <Button variant="dark" type="submit" onClick={() => setSubmitAnswers(true)}>Submit</Button>
                 :
                 <Button disabled variant="dark" type="submit">Submit</Button>
@@ -138,7 +154,7 @@ function Question(props) {
                 .catch(() => setRedirect(true));
         }
         // Submit closed answer to this question
-        if (props.question.type == 'open') {
+        if (props.question.type === 'open') {
             API.submitSingleAnswer({
                 groupId: props.groupId,
                 surveyId: props.surveyId,
