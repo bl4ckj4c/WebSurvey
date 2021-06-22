@@ -18,7 +18,6 @@ function Surveys(props) {
 }
 
 function Questions(props) {
-    const [validInput, setValidInput] = useState(false);
     const [validInputs, setValidInputs] = useState([]);
     const [allInputsValid, setAllInputsValid] = useState(false);
     const [submitAnswers, setSubmitAnswers] = useState(false);
@@ -38,30 +37,48 @@ function Questions(props) {
 
     // Initialize the state array for valid inputs
     useEffect(() => {
-        setValidInputs([]);
-        for(let i = 0; i < props.questions.length; i++)
-            setValidInputs(oldList => [...oldList, false]);
+        console.log(validInputs);
+        console.log(props.questions.length);
+        console.log(props.questions);
+        setAllInputsValid(false);
+        for (let i = 0; i < props.questions.length; i++)
+            setValidInputs(old => [...old, false]);
     }, []);
 
     // Check if all inputs are valid
     useEffect(() => {
+        console.log("CHECK ENTERED");
         let check = true;
-        for(const item of validInputs)
-            setAllInputsValid(old => old && item);
-    }, [validInput]);
+        console.log(validInputs)
+        for (let i = 0; i < validInputs.length; i++) {
+            console.log("CHECK: " + check);
+            console.log("ITEM: " + validInputs[i].status);
+            console.log("CHECK && ITEM: " + validInputs[i].status && check);
+            console.log("\n\n\n");
+            check = validInputs[i] && check;
+            if(!check)
+                break;
+        }
+        if (validInputs.length === 0)
+            setAllInputsValid(false);
+        else
+            setAllInputsValid(check);
+    }, [validInputs]);
 
     return (
         <Container className="justify-content-center align-items-center">
             <br/>
-            <UserNameField setValid={setValidInput} username={username} setUsername={setUsername}/>
+            <UserNameField setValidityStates={setValidInputs} username={username} setUsername={setUsername}/>
             <br/>
             {props.questions.map((question, index) =>
                 <>
                     <Question key={question.id}
+                              index={index}
+                              validityStates={validInputs}
+                              setValidityStates={setValidInputs}
                               question={question}
                               questions={props.questions}
                               setQuestions={props.setQuestions}
-                              setValid={setValidInput}
                               submitAnswers={submitAnswers}
                               surveyId={props.id}
                               username={username}
@@ -210,11 +227,20 @@ function Question(props) {
                                                 }
                                                 if (currChecked < props.question.min || currChecked > props.question.max) {
                                                     setValidMCQ('invalid');
-                                                    props.setValid(false);
-                                                }
-                                                else {
+                                                    props.setValidityStates(oldList => oldList.map((q, index) => {
+                                                        if (props.index === index)
+                                                            return false;
+                                                        else
+                                                            return q;
+                                                    }));
+                                                } else {
                                                     setValidMCQ('valid');
-                                                    props.setValid(true);
+                                                    props.setValidityStates(oldList => oldList.map((q, index) => {
+                                                        if (props.index === index)
+                                                            return true;
+                                                        else
+                                                            return q;
+                                                    }));
                                                 }
                                             }}
                                             checked={checkedMCQ[index]}/>
@@ -254,18 +280,28 @@ function Question(props) {
                                   onChange={(event) => {
                                       setOpenAnswer(event.target.value);
 
-                                      if (props.question.mandatory && event.target.value === '') {
+                                      if (props.question.mandatory === 1 && event.target.value === '') {
                                           setValidOpenAnswer('invalid');
-                                          props.setValid(false);
+                                          props.setValidityStates(oldList => oldList.map((q, index) => {
+                                              if (props.index === index)
+                                                  return false;
+                                              else
+                                                  return q;
+                                          }));
                                       } else {
                                           setValidOpenAnswer('valid');
-                                          props.setValid(true);
+                                          props.setValidityStates(oldList => oldList.map((q, index) => {
+                                              if (props.index === index)
+                                                  return true;
+                                              else
+                                                  return q;
+                                          }));
                                       }
                                   }}
                                   isInvalid={validOpenAnswer === 'invalid'}
                                   as="textarea"
                                   rows={5}
-                                  maxlength={200}
+                                  maxLength={200}
                                   placeholder="Enter here your answer"/>
                     <Form.Control.Feedback type='invalid'>
                         The answer cannot be empty, please fill the field
@@ -291,10 +327,20 @@ function UserNameField(props) {
 
                                   if (event.target.value === '') {
                                       setValidUsername('invalid');
-                                      props.setValid(false);
+                                      props.setValidityStates(oldList => oldList.map((q, index) => {
+                                          if (props.index === index)
+                                              return false;
+                                          else
+                                              return q;
+                                      }));
                                   } else {
                                       setValidUsername('valid');
-                                      props.setValid(true);
+                                      props.setValidityStates(oldList => oldList.map((q, index) => {
+                                          if (props.index === index)
+                                              return true;
+                                          else
+                                              return q;
+                                      }));
                                   }
                               }}
                               isInvalid={validUsername === 'invalid'}
@@ -308,4 +354,4 @@ function UserNameField(props) {
     );
 }
 
-export {Surveys, Questions};
+export {Surveys, Questions}
