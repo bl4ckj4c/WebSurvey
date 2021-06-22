@@ -55,7 +55,7 @@ exports.getGroupId = () => {
                 if (rows.mid <= 0)
                     resolve(1);
                 else
-                    resolve(rows.mid + 1);
+                    resolve(parseInt(rows.mid) + 1);
             }
         });
     });

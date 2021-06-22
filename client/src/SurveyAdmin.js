@@ -9,11 +9,12 @@ import {
     Badge,
     Col,
     InputGroup,
-    FormControl, Row
+    FormControl, Row, Spinner
 } from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
+import {Surveys} from "./Survey";
 
 function swapQuestions(pos, dir, questions, setQuestions) {
     let currItem = questions[pos];
@@ -55,27 +56,31 @@ function swapQuestions(pos, dir, questions, setQuestions) {
 }
 
 function SurveysAdmin(props) {
-    API.getSurveyByIdForAdmin(props.admin)
-        .then((surveys) => {
-            return (
-                <ListGroup>
-                    {surveys.map((survey, index) =>
-                        <Link to={"/admin/survey/" + survey.id} key={survey.id}>
-                            <ListGroup.Item action>
-                                {survey.title}
-                            </ListGroup.Item>
-                        </Link>
-                    )}
-                </ListGroup>
-            );
-        })
-        .catch(() => {
-            return (
-                <ListGroup>
-                    Error
-                </ListGroup>
-            );
-        });
+    // Survey of a specified admin
+    const [surveysAdmin, setSurveysAdmin] = useState([]);
+
+    useEffect(() => {
+        API.getSurveyByIdForAdmin(props.admin)
+            .then(r => {
+                setSurveysAdmin(r);
+            })
+            .catch(r => {
+                setSurveysAdmin([]);
+            });
+    }, []);
+
+
+    return (
+        <ListGroup>
+            {surveysAdmin.map((survey, index) =>
+                <Link to={"/admin/survey/" + survey.id} key={survey.id}>
+                    <ListGroup.Item action>
+                        {survey.title}
+                    </ListGroup.Item>
+                </Link>
+            )}
+        </ListGroup>
+    );
 }
 
 function AddNewQuestionModal(props) {
@@ -606,4 +611,25 @@ function QuestionAdmin(props) {
     }
 }
 
-export {SurveysAdmin, QuestionsAdmin};
+function ViewAnswersOneSurvey(props) {
+    // Answers by one user
+    const [answers, setAnswers] = useState([]);
+
+    useEffect(() => {
+        API.get()
+            .then(r => {
+                setSurveys(r);
+                setLoading(false);
+            })
+            .catch(r => {
+                setSurveys([]);
+                setLoading(false);
+            });
+    }, []);
+
+    return(
+        <></>
+    );
+}
+
+export {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey};

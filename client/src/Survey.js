@@ -70,7 +70,6 @@ function Question(props) {
     // Check the validity on the number of answers for closed questions
     const [validMCQ, setValidMCQ] = useState('init');
     const [numberMCQChecked, setNumberMCQChecked] = useState(0);
-    const [validNumberMCQChecked, setValidNumberMCQChecked] = useState('init');
 
     // Redirect
     const [redirect, setRedirect] = useState(false);
@@ -116,15 +115,12 @@ function Question(props) {
     // Check if a question mandatory is filled
     const [validMandatory, setValidMandatory] = useState('init');
 
-    if (redirect)
-        return (<Redirect to="/"/>);
-
-    // Closed-answer question
-    if (props.question.type === 'closed') {
-        const answers = JSON.parse(props.question.answers);
-
-        // Submit the answer to this question
-        if (props.submitAnswers) {
+    useEffect(() => {
+        if (!props.submitAnswers)
+            return;
+        // Submit closed answer(s) to this question
+        if (props.question.type === 'closed') {
+            const answers = JSON.parse(props.question.answers);
             let tmpAnswers = [];
             for (let i = 0; i < answers.length; i++) {
                 if (checkedMCQ[i])
@@ -141,12 +137,32 @@ function Question(props) {
                 .then(() => setRedirect(true))
                 .catch(() => setRedirect(true));
         }
+        // Submit closed answer to this question
+        if (props.question.type == 'open') {
+            API.submitSingleAnswer({
+                groupId: props.groupId,
+                surveyId: props.surveyId,
+                questionId: props.question.id,
+                type: 'open',
+                answer: openAnswer,
+                user: props.username
+            })
+                .then(() => setRedirect(true))
+                .catch(() => setRedirect(true));
+        }
+    }, [props.submitAnswers])
+
+    if (redirect)
+        return (<Redirect to="/"/>);
+
+    // Closed-answer question
+    if (props.question.type === 'closed') {
+        const answers = JSON.parse(props.question.answers);
 
         return (
             <Card bg="light">
                 <Card.Body>
                     <Card.Title>
-                        {console.log(props.question.mandatory)}
                         {props.question.title}
                         {props.question.mandatory === 1 ?
                             <>
@@ -202,20 +218,6 @@ function Question(props) {
 
     // Open-ended question
     if (props.question.type === 'open') {
-        // Submit the answer to this question
-        if (props.submitAnswers) {
-            API.submitSingleAnswer({
-                groupId: props.groupId,
-                surveyId: props.surveyId,
-                questionId: props.question.id,
-                type: 'open',
-                answer: openAnswer,
-                user: props.username
-            })
-                .then(() => setRedirect(true))
-                .catch(() => setRedirect(true));
-        }
-
         return (
             <Card bg="light">
                 <Card.Body>

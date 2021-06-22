@@ -29,11 +29,9 @@ async function getGroupId() {
     const response = await fetch(BASE_URL + "/groupId");
     const nextGroupId = response.json();
     if (response.ok) {
-        console.log(nextGroupId);
         return nextGroupId;
     } else {
         // An object with the error coming from the server
-        console.log(nextGroupId);
         throw nextGroupId;
     }
 }
@@ -81,6 +79,18 @@ async function createSurvey(title, questions, owner) {
 }
 
 async function getSurveyByIdForAdmin(id) {
+    // call: GET /api/surveys/admin/:id
+    const response = await fetch(BASE_URL + "/surveys/admin/" + id);
+    const surveysJson = response.json();
+    if (response.ok) {
+        return surveysJson;
+    } else {
+        // An object with the error coming from the server
+        throw surveysJson;
+    }
+}
+
+async function geetSurveyByIdForAdmin(id) {
     // call: GET /api/surveys/admin/:id
     const response = await fetch(BASE_URL + "/surveys/admin/" + id);
     const surveysJson = response.json();

@@ -6,7 +6,7 @@ import {useEffect, useState} from "react";
 import {Card, CardDeck, Container, Spinner} from "react-bootstrap";
 import {UserAdmin} from "./Login";
 import {Surveys, Questions} from "./Survey";
-import {SurveysAdmin, QuestionsAdmin} from "./SurveyAdmin";
+import {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey} from "./SurveyAdmin";
 import API from './API';
 import MyNavBar from "./MyNavBar";
 
@@ -61,11 +61,9 @@ function App() {
                         <>
                             <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                             {loading ?
-                                <>
-                                    <Spinner animation="grow" variant="dark"/>
-                                    <Spinner animation="grow" variant="dark"/>
-                                    <Spinner animation="grow" variant="dark"/>
-                                </>
+                                <Container className="justify-content-center align-items-center">
+                                    <Spinner animation="circle" variant="dark"/>
+                                </Container>
                                 :
                                 <Surveys surveys={surveys}/>
                             }
@@ -137,6 +135,32 @@ function App() {
                             <SurveysAdmin admin={loggedAdmin}/>
                         </>
                     }/>
+
+                    <Route exact path="/admin/survey/:id" render={({match}) => {
+                        const id = parseInt(match.params.id, 10);
+                        if (isNaN(id) || id <= 0) {
+                            return (
+                                <>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <Card>
+                                        <Card.Body>
+                                            <Card.Title>Error</Card.Title>
+                                            <Card.Text>
+                                                The id passed is not a number or is less than 1
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </>
+                            );
+                        } else {
+                            return (
+                                <>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <ViewAnswersOneSurvey surveyId={id} loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                </>
+                            );
+                        }
+                    }}/>
                 </Switch>
             </div>
         </Router>
