@@ -95,9 +95,6 @@ function AddNewQuestionModal(props) {
     // State for the mandatory option
     const [mandatory, setMandatory] = useState(false);
 
-    // State for valid question
-    const [validQuestion, setValidQuestion] = useState(false);
-
     // States for the validity of the title
     const [validTitle, setValidTitle] = useState('init');
     const [title, setTitle] = useState('');
@@ -106,7 +103,9 @@ function AddNewQuestionModal(props) {
     const [answers, setAnswers] = useState([]);
     const [numAnswers, setNumAnswers] = useState(1);
     const [min, setMin] = useState(0);
-    const [max, setMax] = useState(10);
+    const [validMin, setValidMin] = useState('init');
+    const [max, setMax] = useState(1);
+    const [validMax, setValidMax] = useState('init');
 
     // States for valid answers
     const [checkedMCQ0, setCheckedMCQ0] = useState('init');
@@ -144,19 +143,49 @@ function AddNewQuestionModal(props) {
         setCheckedMCQ9
     ]
 
+    // Valid inputs
+    const [validInputs, setValidInputs] = useState([]);
+    const [allValidInputs, setAllValidInputs] = useState(false);
+
     useEffect(() => {
         if (answers.length === 0)
             setAnswers(oldList => [...oldList, '']);
     }, []);
 
     useEffect(() => {
+        setAllValidInputs(false);
+    }, [openClose]);
+
+    useEffect(() => {
         setAnswers([]);
+        setAllValidInputs(false);
+        setMax(1);
         for (let i = 0; i < numAnswers; i++)
             setAnswers(oldList => [...oldList, '']);
-        for (let i = 0; i < 10; i++)
+        for (let i = 0; i < 10; i++) {
             setCheckedMCQ[i]('init');
-
+            setValidInputs(old => [...old, false]);
+        }
     }, [numAnswers]);
+
+    useEffect(() => {
+        let check = true;
+        check = validMin && check;
+        check = validMax && check;
+        if(validTitle === 'init' || validTitle === 'invalid')
+            check = false;
+        if(openClose === 'close') {
+            for (let i = 0; i < validInputs.length; i++) {
+                check = validInputs[i] && check;
+                if(!check)
+                    break;
+            }
+        }
+        if (validInputs.length === 0)
+            setAllValidInputs(false);
+        else
+            setAllValidInputs(check);
+    }, [validInputs, validTitle, validMin, validMax]);
 
     return (
         <Modal show={props.show} onHide={props.handleClose}>
@@ -188,10 +217,8 @@ function AddNewQuestionModal(props) {
 
                                           if (event.target.value === '') {
                                               setValidTitle('invalid');
-                                              setValidQuestion(false);
                                           } else {
                                               setValidTitle('valid');
-                                              setValidQuestion(true);
                                           }
                                       }}
                                       isInvalid={validTitle === 'invalid'}/>
@@ -224,12 +251,19 @@ function AddNewQuestionModal(props) {
                                     <Form.Control as="select"
                                                   value={min}
                                                   onChange={(event) => {
-                                                      setMin(parseInt(event.target.value));
+                                                      if (event.target.value <= numAnswers) {
+                                                          setMin(parseInt(event.target.value));
+                                                          setValidMin('valid');
+                                                      } else {
+                                                          setMin(parseInt(event.target.value));
+                                                          setValidMin('invalid');
+                                                      }
                                                       if (parseInt(event.target.value) > 0)
                                                           setMandatory(true);
                                                       else
                                                           setMandatory(false);
-                                                  }}>
+                                                  }}
+                                                  isInvalid={validMin === 'invalid'}>
                                         <option>0</option>
                                         <option>1</option>
                                         <option>2</option>
@@ -242,12 +276,24 @@ function AddNewQuestionModal(props) {
                                         <option>9</option>
                                         <option>10</option>
                                     </Form.Control>
+                                    <Form.Control.Feedback type='invalid'>
+                                        Invalid MIN value
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                                 <Form.Group as={Col} controlId="maximumAnswers">
                                     <Form.Label>Maximum answers</Form.Label>
                                     <Form.Control as="select"
                                                   value={max}
-                                                  onChange={(event) => setMax(parseInt(event.target.value))}>
+                                                  onChange={(event) => {
+                                                      if (event.target.value <= numAnswers) {
+                                                          setMax(parseInt(event.target.value));
+                                                          setValidMax('valid');
+                                                      } else {
+                                                          setMax(parseInt(event.target.value));
+                                                          setValidMax('invalid');
+                                                      }
+                                                  }}
+                                                  isInvalid={validMax === 'invalid'}>
                                         <option>1</option>
                                         <option>2</option>
                                         <option>3</option>
@@ -259,6 +305,9 @@ function AddNewQuestionModal(props) {
                                         <option>9</option>
                                         <option>10</option>
                                     </Form.Control>
+                                    <Form.Control.Feedback type='invalid'>
+                                        Invalid MAX value
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Form.Row>
                             <Container className="justify-content-center align-items-center">
@@ -276,10 +325,20 @@ function AddNewQuestionModal(props) {
 
                                                          if (event.target.value === '') {
                                                              setCheckedMCQ[index]('invalid');
-                                                             setValidQuestion(false);
+                                                             setValidInputs(oldList => oldList.map((q, indexBis) => {
+                                                                 if (props.index === indexBis)
+                                                                     return false;
+                                                                 else
+                                                                     return q;
+                                                             }));
                                                          } else {
                                                              setCheckedMCQ[index]('valid');
-                                                             setValidQuestion(true);
+                                                             setValidInputs(oldList => oldList.map((q, indexBis) => {
+                                                                 if (props.index === indexBis)
+                                                                     return true;
+                                                                 else
+                                                                     return q;
+                                                             }));
                                                          }
                                                      }}
                                                      isInvalid={checkedMCQ[index] === 'invalid'}/>
@@ -317,7 +376,7 @@ function AddNewQuestionModal(props) {
                 <Button variant="danger" onClick={props.handleClose}>
                     Cancel
                 </Button>
-                {validQuestion ?
+                {allValidInputs ?
                     <Button variant="success" onClick={() => {
                         props.addQuestion({
                             surveyId: -1,  // This is a placeholder, the actual value will be set once the survey is created

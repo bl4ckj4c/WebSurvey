@@ -20,10 +20,12 @@ function Surveys(props) {
 function Questions(props) {
     const [validInputs, setValidInputs] = useState([]);
     const [allInputsValid, setAllInputsValid] = useState(false);
+
     const [submitAnswers, setSubmitAnswers] = useState(false);
 
     // The username is global because is needed by each question for the submit process
     const [username, setUsername] = useState('');
+    const [validUsername, setValidUsername] = useState(false);
 
     // GroupId used to submit answers all together
     const [groupId, setGroupId] = useState(0);
@@ -37,24 +39,20 @@ function Questions(props) {
 
     // Initialize the state array for valid inputs
     useEffect(() => {
-        console.log(validInputs);
-        console.log(props.questions.length);
-        console.log(props.questions);
         setAllInputsValid(false);
-        for (let i = 0; i < props.questions.length; i++)
-            setValidInputs(old => [...old, false]);
-    }, []);
+        for (let i = 0; i < props.questions.length; i++) {
+            if (props.questions[i].mandatory === 1)
+                setValidInputs(old => [...old, false]);
+            else
+                setValidInputs(old => [...old, true]);
+        }
+    }, [props.questions]);
 
     // Check if all inputs are valid
     useEffect(() => {
-        console.log("CHECK ENTERED");
         let check = true;
-        console.log(validInputs)
+        check = validUsername && check;
         for (let i = 0; i < validInputs.length; i++) {
-            console.log("CHECK: " + check);
-            console.log("ITEM: " + validInputs[i].status);
-            console.log("CHECK && ITEM: " + validInputs[i].status && check);
-            console.log("\n\n\n");
             check = validInputs[i] && check;
             if(!check)
                 break;
@@ -63,12 +61,12 @@ function Questions(props) {
             setAllInputsValid(false);
         else
             setAllInputsValid(check);
-    }, [validInputs]);
+    }, [validInputs, validUsername]);
 
     return (
         <Container className="justify-content-center align-items-center">
             <br/>
-            <UserNameField setValidityStates={setValidInputs} username={username} setUsername={setUsername}/>
+            <UserNameField setValidUsername={setValidUsername} username={username} setUsername={setUsername}/>
             <br/>
             {props.questions.map((question, index) =>
                 <>
@@ -327,20 +325,10 @@ function UserNameField(props) {
 
                                   if (event.target.value === '') {
                                       setValidUsername('invalid');
-                                      props.setValidityStates(oldList => oldList.map((q, index) => {
-                                          if (props.index === index)
-                                              return false;
-                                          else
-                                              return q;
-                                      }));
+                                      props.setValidUsername(false);
                                   } else {
                                       setValidUsername('valid');
-                                      props.setValidityStates(oldList => oldList.map((q, index) => {
-                                          if (props.index === index)
-                                              return true;
-                                          else
-                                              return q;
-                                      }));
+                                      props.setValidUsername(true);
                                   }
                               }}
                               isInvalid={validUsername === 'invalid'}
