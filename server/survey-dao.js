@@ -123,24 +123,19 @@ exports.getAllSurveysByAdminId = (owner) => {
 
 exports.getAllAnswersFromSurveyId = (surveyId, adminId) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT * " +
+        const sql = "SELECT A.groupId, A.type, A.answer, A.user, Q.position, Q.title, Q.answers " +
             "FROM surveys S, answers A, questions Q " +
-            "WHERE S.id = A.surveyId AND S.id = Q.surveyId AND S.id = ? AND S.owner = ?";
+            "WHERE S.id = A.surveyId AND A.questionId = Q.id AND S.id = ? AND S.owner = ?";
         db.all(sql, [surveyId, adminId], (err, rows) => {
             if (err) {
                 reject(err);
             } else {
-                const answers = rows.map(r => ({
-                    res: r
-                    /*id: r.id,
-                    type: r.type,
-                    title: r.title,
-                    answers: r.answers,
-                    min: r.min,
-                    max: r.max,
-                    mandatory: r.mandatory,
-                    position: r.position*/
-                }));
+                // Group by each groupId using JS reduce
+                let answers = rows.reduce((r, answer) => {
+                    r[answer.groupId] = r[answer.groupId] || [];
+                    r[answer.groupId].push(answer);
+                    return r;
+                }, Object.create(null));
                 resolve(answers);
             }
         });

@@ -9,7 +9,7 @@ import {
     Badge,
     Col,
     InputGroup,
-    FormControl, Row, Spinner
+    FormControl, Row, Spinner, Pagination, ButtonGroup
 } from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
@@ -53,6 +53,12 @@ function swapQuestions(pos, dir, questions, setQuestions) {
             return a.position - b.position;
         }));
     }
+}
+
+function deleteQuestion(pos, setQuestions, questions) {
+    let size = questions.length;
+    setQuestions(oldList => oldList.filter(q => q.position !== pos));
+    //setQuestions(oldList => oldList.map((q, index) => q.position = index));
 }
 
 function SurveysAdmin(props) {
@@ -444,6 +450,13 @@ function QuestionAdmin(props) {
 
         return (
             <Card bg="light">
+                <Card.Header>
+                    <Button variant="danger"
+                            onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}
+                    >
+                        Delete
+                    </Button>
+                </Card.Header>
                 <Card.Body>
                     <Card.Title>
                         {props.question.title}
@@ -531,6 +544,13 @@ function QuestionAdmin(props) {
 
         return (
             <Card bg="light">
+                <Card.Header>
+                    <Button variant="danger"
+                            onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}
+                    >
+                        Delete
+                    </Button>
+                </Card.Header>
                 <Card.Body>
                     <Card.Title>
                         {props.question.title}
@@ -615,19 +635,133 @@ function ViewAnswersOneSurvey(props) {
     // Answers by one user
     const [answers, setAnswers] = useState([]);
 
+    // Loading
+    const [loading, setLoading] = useState(true);
+
+    // Current answer shown
+    const [currentAnswer, setCurrentAnswer] = useState(0);
+    const [currentAnswersArray, setCurrentAnswersArray] = useState([]);
+    const [totalAnswers, setTotalAnswers] = useState(1);
+    // All groups of answers present
+    const [groupsId, setGroupsId] = useState([]);
+
     useEffect(() => {
         API.getAllAnswersBySurveyId(props.surveyId, props.loggedAdmin)
             .then(r => {
-                console.log(r);
+                setAnswers(r);
+                for (const id in r) {
+                    setGroupsId(old => [...old, id]);
+                    setTotalAnswers(old => old++);
+                }
+                setCurrentAnswer(0);
+                setLoading(false);
             })
             .catch(r => {
-                console.log(r);
+                setAnswers([]);
             });
     }, []);
 
-    return(
-        <></>
+    useEffect(() => {
+        if (loading)
+            return;
+        let tmpArray = Object.create(answers[groupsId[currentAnswer]]);
+        tmpArray.sort((a, b) => {
+            return a.position - b.position;
+        });
+        setCurrentAnswersArray(tmpArray);
+    }, [currentAnswer, loading]);
+
+    return (
+        <Container className="justify-content-center align-items-center">
+            {loading ?
+                <>
+                    <br/>
+                    <br/>
+                    <Spinner animation="border"/>
+                    <br/>
+                    <br/>
+                    <br/>
+                </>
+                :
+                <>
+                    <br/>
+                    // TODO: insert user name and enable buttons
+                    <br/>
+                    {currentAnswersArray.map(question =>
+                        <>
+                            <ViewAnswersAdmin question={question}/>
+                            <br/>
+                        </>
+                    )}
+                </>}
+            <br/>
+            <ButtonGroup aria-label="Pagination">
+                <Button variant="primary">First</Button>
+                <Button variant="primary">Previous</Button>
+            </ButtonGroup>
+            {' '}
+            <Button variant="light" disabled>{currentAnswer} out of {totalAnswers}</Button>
+            {' '}
+            <ButtonGroup aria-label="Pagination">
+                <Button variant="primary">Next</Button>
+                <Button variant="primary">Last</Button>
+            </ButtonGroup>
+        </Container>
     );
 }
 
-export {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey};
+function ViewAnswersAdmin(props) {
+    console.log(props.question);
+
+    // Closed-answer question
+    if (props.question.type === 'closed') {
+        let answerIndex = JSON.parse(props.question.answer);
+        let answers = JSON.parse(props.question.answers);
+        return (
+            <Card bg="light">
+                <Card.Body>
+                    <Card.Title>
+                        {props.question.title}
+                    </Card.Title>
+                </Card.Body>
+                <ListGroup className="list-group-flush">
+                    {answers.map((answer, index) => {
+                        let checked = false;
+                        if (answerIndex.find(item => item === (index + 1)))
+                            checked = true;
+                        return (
+                            <ListGroupItem key={index}>
+                                <Form.Group controlId={"answer" + index}>
+                                    <Form.Check disabled checked={checked} variant='success' label={answer}/>
+                                </Form.Group>
+                            </ListGroupItem>
+                        );
+                    })}
+                </ListGroup>
+            </Card>
+        );
+    }
+
+
+    // Open-ended question
+    if (props.question.type === 'open') {
+        return (
+            <Card bg="light">
+                <Card.Body>
+                    <Card.Title>
+                        {props.question.title}
+                    </Card.Title>
+                    <Card.Text>
+                        {props.question.answer === '' ?
+                            "Empty answer"
+                            :
+                            props.question.answer
+                        }
+                    </Card.Text>
+                </Card.Body>
+            </Card>
+        );
+    }
+}
+
+export {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey}
