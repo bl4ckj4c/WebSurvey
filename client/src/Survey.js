@@ -1,19 +1,26 @@
-import {Card, Form, ListGroup, ListGroupItem, Button, Container, Badge, Alert} from "react-bootstrap";
+import {Card, Form, ListGroup, ListGroupItem, Button, Container, Badge, Alert, Spinner} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
 
 function Surveys(props) {
     return (
-        <ListGroup>
+        <Container className="justify-content-center align-items-center">
             {props.surveys.map((survey, index) =>
-                <Link to={"/survey/" + survey.id} key={survey.id}>
-                    <ListGroup.Item action>
-                        {survey.title}
-                    </ListGroup.Item>
-                </Link>
+                <>
+                    <Link to={"/survey/" + survey.id} key={survey.id} style={{textDecoration: 'none'}}>
+                        <Card bg="light">
+                            <Card.Body>
+                                <Card.Title>
+                                    {survey.title}
+                                </Card.Title>
+                            </Card.Body>
+                        </Card>
+                    </Link>
+                    <br/>
+                </>
             )}
-        </ListGroup>
+        </Container>
     );
 }
 
@@ -30,10 +37,16 @@ function Questions(props) {
     // GroupId used to submit answers all together
     const [groupId, setGroupId] = useState(0);
 
+    // Loading state
+    const [loading, setLoading] = useState(true);
+
     // Obtain the groupId used to connect together answers to a survey session
     useEffect(() => {
         API.getGroupId()
-            .then((r) => setGroupId(r))
+            .then((r) => {
+                setGroupId(r);
+                setLoading(false);
+            })
             .catch(() => setGroupId(0));
     }, []);
 
@@ -54,7 +67,7 @@ function Questions(props) {
         check = validUsername && check;
         for (let i = 0; i < validInputs.length; i++) {
             check = validInputs[i] && check;
-            if(!check)
+            if (!check)
                 break;
         }
         if (validInputs.length === 0)
@@ -65,34 +78,48 @@ function Questions(props) {
 
     return (
         <Container className="justify-content-center align-items-center">
-            <br/>
-            <UserNameField setValidUsername={setValidUsername} username={username} setUsername={setUsername}/>
-            <br/>
-            {props.questions.map((question, index) =>
+            {loading ?
                 <>
-                    <Question key={question.id}
-                              index={index}
-                              validityStates={validInputs}
-                              setValidityStates={setValidInputs}
-                              question={question}
-                              questions={props.questions}
-                              setQuestions={props.setQuestions}
-                              submitAnswers={submitAnswers}
-                              surveyId={props.id}
-                              username={username}
-                              setUsername={setUsername}
-                              groupId={groupId}
-                    />
+                    <br/>
+                    <br/>
+                    <Spinner animation="border" variant="primary"/>
+                    <br/>
+                    <br/>
                     <br/>
                 </>
-            )}
-            <br/>
-            {allInputsValid ?
-                <Button variant="dark" type="submit" onClick={() => setSubmitAnswers(true)}>Submit</Button>
                 :
-                <Button disabled variant="dark" type="submit">Submit</Button>
+                <>
+                    <br/>
+                    <UserNameField setValidUsername={setValidUsername} username={username} setUsername={setUsername}/>
+                    <br/>
+                    {props.questions.map((question, index) =>
+                        <>
+                            <Question key={question.id}
+                                      index={index}
+                                      validityStates={validInputs}
+                                      setValidityStates={setValidInputs}
+                                      question={question}
+                                      questions={props.questions}
+                                      setQuestions={props.setQuestions}
+                                      submitAnswers={submitAnswers}
+                                      surveyId={props.id}
+                                      username={username}
+                                      setUsername={setUsername}
+                                      groupId={groupId}
+                            />
+                            <br/>
+                        </>
+                    )}
+                    <br/>
+                    {allInputsValid ?
+                        <Button variant="dark" type="submit" onClick={() => setSubmitAnswers(true)}>Submit</Button>
+                        :
+                        <Button disabled variant="dark" type="submit">Submit</Button>
+                    }
+                    <br/>
+                </>
+
             }
-            <br/>
         </Container>
     );
 }

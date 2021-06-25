@@ -61,11 +61,19 @@ function App() {
                         <>
                             <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                             {loading ?
-                                <Container className="justify-content-center align-items-center">
-                                    <Spinner animation="circle" variant="dark"/>
-                                </Container>
+                                <>
+                                    <br/>
+                                    <br/>
+                                    <Spinner animation="border" variant="primary"/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </>
                                 :
-                                <Surveys surveys={surveys}/>
+                                <>
+                                    <br/>
+                                    <Surveys surveys={surveys}/>
+                                </>
                             }
                         </>
                     }/>
@@ -101,30 +109,31 @@ function App() {
                             <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                             <br/>
                             <Container className="justify-content-center align-items-center">
-                            <Link to="/admin/newSurvey">
-                                <Card bg="primary" text="light">
-                                    <Card.Body>
-                                        <Card.Title>Create a new survey</Card.Title>
-                                    </Card.Body>
-                                </Card>
-                            </Link>
-                            <br/>
-                            <Link to="/admin/viewSurveys">
-                                <Card bg="primary" text="light">
-                                    <Card.Body>
-                                        <Card.Title>See result of your surveys</Card.Title>
-                                    </Card.Body>
-                                </Card>
-                            </Link>
+                                <Link to="/admin/newSurvey">
+                                    <Card bg="primary" text="light">
+                                        <Card.Body>
+                                            <Card.Title>Create a new survey</Card.Title>
+                                        </Card.Body>
+                                    </Card>
+                                </Link>
+                                <br/>
+                                <Link to="/admin/viewSurveys">
+                                    <Card bg="primary" text="light">
+                                        <Card.Body>
+                                            <Card.Title>See result of your surveys</Card.Title>
+                                        </Card.Body>
+                                    </Card>
+                                </Link>
                             </Container>
                         </>
                     }/>
 
                     <Route exact path="/admin/newSurvey" render={() =>
                         <>
-                        <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
-                        <br/>
-                        <QuestionsAdmin questions={questionsAdmin} setQuestions={setQuestionsAdmin} owner={loggedAdmin}/>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <br/>
+                            <QuestionsAdmin questions={questionsAdmin} setQuestions={setQuestionsAdmin}
+                                            owner={loggedAdmin}/>
                         </>
                     }/>
 

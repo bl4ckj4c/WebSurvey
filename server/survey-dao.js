@@ -109,12 +109,15 @@ exports.addQuestionsToSurvey = (surveyId, question) => {
 
 exports.getAllSurveysByAdminId = (owner) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT id, title FROM surveys WHERE owner = ?";
+        const sql = "SELECT S.id, S.title, COUNT (DISTINCT A.groupId) AS numAnswer " +
+            "FROM surveys S, answers A " +
+            "WHERE S.id = A.surveyId AND owner = ? " +
+            "GROUP BY S.id, S.title";
         db.all(sql, [owner], (err, rows) => {
             if (err) {
                 reject(err);
             } else {
-                const surveys = rows.map(r => ({id: r.id, title: r.title}));
+                const surveys = rows.map(r => ({id: r.id, title: r.title, numAnswer: r.numAnswer}));
                 resolve(surveys);
             }
         });

@@ -65,19 +65,52 @@ function SurveysAdmin(props) {
     // Survey of a specified admin
     const [surveysAdmin, setSurveysAdmin] = useState([]);
 
+    // Loading state
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         API.getSurveyByIdForAdmin(props.admin)
             .then(r => {
                 setSurveysAdmin(r);
+                setLoading(false);
             })
             .catch(r => {
                 setSurveysAdmin([]);
             });
     }, []);
 
-
     return (
-        <ListGroup>
+        <Container className="justify-content-center align-items-center">
+            {loading ?
+                <>
+                    <br/>
+                    <br/>
+                    <Spinner animation="border" variant="primary"/>
+                    <br/>
+                    <br/>
+                    <br/>
+                </>
+                :
+                surveysAdmin.map((survey, index) =>
+                    <>
+                        <Link to={"/admin/survey/" + survey.id} key={survey.id} style={{textDecoration: 'none'}}>
+                            <Card bg="light">
+                                <Card.Body>
+                                    <Card.Title>
+                                        {survey.title}
+                                    </Card.Title>
+                                </Card.Body>
+                                <Card.Footer>
+                                    Number of answers: {survey.numAnswer}
+                                </Card.Footer>
+                            </Card>
+                        </Link>
+                        <br/>
+                    </>
+                )
+            }
+        </Container>
+        /*<ListGroup>
             {surveysAdmin.map((survey, index) =>
                 <Link to={"/admin/survey/" + survey.id} key={survey.id}>
                     <ListGroup.Item action>
@@ -85,7 +118,7 @@ function SurveysAdmin(props) {
                     </ListGroup.Item>
                 </Link>
             )}
-        </ListGroup>
+        </ListGroup>*/
     );
 }
 
@@ -172,12 +205,12 @@ function AddNewQuestionModal(props) {
         let check = true;
         check = validMin && check;
         check = validMax && check;
-        if(validTitle === 'init' || validTitle === 'invalid')
+        if (validTitle === 'init' || validTitle === 'invalid')
             check = false;
-        if(openClose === 'close') {
+        if (openClose === 'close') {
             for (let i = 0; i < validInputs.length; i++) {
                 check = validInputs[i] && check;
-                if(!check)
+                if (!check)
                     break;
             }
         }
@@ -700,7 +733,7 @@ function ViewAnswersOneSurvey(props) {
     // Current answer shown
     const [currentAnswer, setCurrentAnswer] = useState(0);
     const [currentAnswersArray, setCurrentAnswersArray] = useState([]);
-    const [totalAnswers, setTotalAnswers] = useState(1);
+    const [totalAnswers, setTotalAnswers] = useState(0);
     // All groups of answers present
     const [groupsId, setGroupsId] = useState([]);
 
@@ -708,10 +741,12 @@ function ViewAnswersOneSurvey(props) {
         API.getAllAnswersBySurveyId(props.surveyId, props.loggedAdmin)
             .then(r => {
                 setAnswers(r);
+                let counter = 0;
                 for (const id in r) {
                     setGroupsId(old => [...old, id]);
-                    setTotalAnswers(old => old++);
+                    counter++;
                 }
+                setTotalAnswers(counter);
                 setCurrentAnswer(0);
                 setLoading(false);
             })
@@ -736,7 +771,7 @@ function ViewAnswersOneSurvey(props) {
                 <>
                     <br/>
                     <br/>
-                    <Spinner animation="border"/>
+                    <Spinner animation="border" variant="primary"/>
                     <br/>
                     <br/>
                     <br/>
@@ -744,7 +779,16 @@ function ViewAnswersOneSurvey(props) {
                 :
                 <>
                     <br/>
-                    // TODO: insert user name and enable buttons
+                    <Card bg="light">
+                        <Card.Body>
+                            <Card.Title>
+                                User
+                            </Card.Title>
+                            <Card.Text>
+                                {answers[groupsId[currentAnswer]][0].user}
+                            </Card.Text>
+                        </Card.Body>
+                    </Card>
                     <br/>
                     {currentAnswersArray.map(question =>
                         <>
@@ -755,23 +799,37 @@ function ViewAnswersOneSurvey(props) {
                 </>}
             <br/>
             <ButtonGroup aria-label="Pagination">
-                <Button variant="primary">First</Button>
-                <Button variant="primary">Previous</Button>
+                <Button variant="primary" onClick={() => setCurrentAnswer(0)}>First</Button>
+                {
+                    currentAnswer === 0 ?
+                        <Button variant="primary" disabled>Previous</Button>
+                        :
+                        <Button variant="primary" onClick={() => {
+                            if (currentAnswer > 0)
+                                setCurrentAnswer(old => old - 1);
+                        }}>Previous</Button>
+                }
             </ButtonGroup>
             {' '}
-            <Button variant="light" disabled>{currentAnswer} out of {totalAnswers}</Button>
+            <Button variant="light" disabled>{currentAnswer + 1} out of {totalAnswers}</Button>
             {' '}
             <ButtonGroup aria-label="Pagination">
-                <Button variant="primary">Next</Button>
-                <Button variant="primary">Last</Button>
+                {
+                    currentAnswer === (totalAnswers - 1) ?
+                        <Button variant="primary" disabled>Next</Button>
+                        :
+                        <Button variant="primary" onClick={() => {
+                            if (currentAnswer < (totalAnswers - 1))
+                                setCurrentAnswer(old => old + 1);
+                        }}>Next</Button>
+                }
+                <Button variant="primary" onClick={() => setCurrentAnswer(() => totalAnswers - 1)}>Last</Button>
             </ButtonGroup>
         </Container>
     );
 }
 
 function ViewAnswersAdmin(props) {
-    console.log(props.question);
-
     // Closed-answer question
     if (props.question.type === 'closed') {
         let answerIndex = JSON.parse(props.question.answer);
