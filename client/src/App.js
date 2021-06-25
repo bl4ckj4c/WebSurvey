@@ -1,10 +1,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from './logo.svg';
 import './App.css';
-import {BrowserRouter as Router, Link, Route, Switch} from 'react-router-dom';
+import {BrowserRouter as Router, Link, Redirect, Route, Switch} from 'react-router-dom';
 import {useEffect, useState} from "react";
-import {Card, CardDeck, Container, Spinner} from "react-bootstrap";
-import {UserAdmin} from "./Login";
+import {Card, Container, Spinner} from "react-bootstrap";
+import {Login} from "./Login";
 import {Surveys, Questions} from "./Survey";
 import {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey} from "./SurveyAdmin";
 import API from './API';
@@ -14,7 +14,7 @@ function App() {
     // At the beginning, no user is logged in
     const [loggedIn, setLoggedIn] = useState(false);
     // Current logged admin
-    const [loggedAdmin, setLoggedAdmin] = useState(1);
+    const [loggedAdmin, setLoggedAdmin] = useState("Anonymous");
     // List of all available surveys
     const [surveys, setSurveys] = useState([]);
     // Current survey selected by anonymous user
@@ -25,6 +25,44 @@ function App() {
     const [questionsAdmin, setQuestionsAdmin] = useState([]);
     // Loading state for the home page
     const [loading, setLoading] = useState(true);
+    // Error in login
+    const [errorLogin, setErrorLogin] = useState(false);
+
+    const doLogIn = async (credentials) => {
+        try {
+            const user = await API.logIn(credentials);
+            setLoggedIn(true);
+            setLoggedAdmin(user);
+            setErrorLogin(false);
+        } catch(err) {
+            setLoggedIn(false);
+            setErrorLogin(true);
+        }
+    }
+
+    const doLogOut = async () => {
+        await API.logOut();
+        setLoggedIn(false);
+        // clean up everything
+        setQuestionsAdmin([]);
+        setLoggedAdmin("Anonymous");
+        setErrorLogin(false);
+    }
+
+    // Check if the user is already authorized
+    useEffect(()=> {
+        const checkAuth = async() => {
+            try {
+                // here you have the user info, if already logged in
+                let result = await API.getUserInfo();
+                setLoggedAdmin(result.name);
+                setLoggedIn(true);
+            } catch(err) {
+                console.error(err.error);
+            }
+        };
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         API.getAllSurveys()
@@ -59,7 +97,7 @@ function App() {
                 <Switch>
                     <Route exact path="/" render={() =>
                         <>
-                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                             {loading ?
                                 <>
                                     <br/>
@@ -82,7 +120,7 @@ function App() {
                         if (isNaN(id) || id <= 0) {
                             return (
                                 <>
-                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                                     <Card>
                                         <Card.Body>
                                             <Card.Title>Error</Card.Title>
@@ -97,7 +135,7 @@ function App() {
                             setCurrSurvey(id);
                             return (
                                 <>
-                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                                     <Questions id={id} questions={questions} setQuestions={setQuestions}/>
                                 </>
                             );
@@ -106,7 +144,7 @@ function App() {
 
                     <Route exact path="/admin" render={() =>
                         <>
-                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                             <br/>
                             <Container className="justify-content-center align-items-center">
                                 <Link to="/admin/newSurvey">
@@ -130,7 +168,7 @@ function App() {
 
                     <Route exact path="/admin/newSurvey" render={() =>
                         <>
-                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                             <br/>
                             <QuestionsAdmin questions={questionsAdmin} setQuestions={setQuestionsAdmin}
                                             owner={loggedAdmin}/>
@@ -139,7 +177,7 @@ function App() {
 
                     <Route exact path="/admin/viewSurveys" render={() =>
                         <>
-                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                            <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                             <br/>
                             <SurveysAdmin admin={loggedAdmin}/>
                         </>
@@ -150,7 +188,7 @@ function App() {
                         if (isNaN(id) || id <= 0) {
                             return (
                                 <>
-                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                                     <Card>
                                         <Card.Body>
                                             <Card.Title>Error</Card.Title>
@@ -164,12 +202,16 @@ function App() {
                         } else {
                             return (
                                 <>
-                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
+                                    <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                                     <ViewAnswersOneSurvey surveyId={id} loggedIn={loggedIn} loggedAdmin={loggedAdmin}/>
                                 </>
                             );
                         }
                     }}/>
+
+                    <Route exact path="/login" render={({match}) =>
+                        <Login login={doLogIn} loggedIn={loggedIn} error={errorLogin} setError={setErrorLogin}/>
+                    }/>
                 </Switch>
             </div>
         </Router>

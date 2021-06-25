@@ -1,7 +1,10 @@
-import {Container, Navbar} from "react-bootstrap";
+import {Button, Container, Navbar, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {Link} from "react-router-dom";
+import {useState} from "react";
 
 function MyNavBar(props) {
+    const [message, setMessage] = useState(false);
+
     return (
         <Navbar bg="primary" variant="dark" sticky="top">
             <Container>
@@ -12,11 +15,26 @@ function MyNavBar(props) {
                 <Navbar.Collapse className="justify-content-end">
                     {props.loggedIn ?
                         <Navbar.Text>
-                            Signed in as: <Link to="/login">{props.loggedAdmin}</Link>
+                            <Button variant="outline-light"
+                                    onMouseEnter={() => setMessage(true)}
+                                    onMouseLeave={() => setMessage(false)}
+                                    onClick={props.logout}>
+                                {
+                                    message ?
+                                        "Log Out"
+                                        :
+                                        "Signed in as: " + props.loggedAdmin
+                                }
+                                {message}
+                            </Button>
                         </Navbar.Text>
                         :
                         <Navbar.Text>
-                            Signed in as: <Link to="/login">Anonymous</Link>
+                            <Link to="/login">
+                                <Button variant="light">
+                                    Log In
+                                </Button>
+                            </Link>
                         </Navbar.Text>
                     }
 

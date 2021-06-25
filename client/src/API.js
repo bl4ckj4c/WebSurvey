@@ -1,5 +1,7 @@
 const BASE_URL = '/api';
 
+// Surveys functions
+
 async function getAllSurveys() {
     // call: GET /api/surveys
     const response = await fetch(BASE_URL + "/surveys");
@@ -102,5 +104,59 @@ async function getAllAnswersBySurveyId(surveyId, adminId) {
     }
 }
 
-const API = {getAllSurveys, getAllQuestionsFromSurveyId, getGroupId, submitSingleAnswer, createSurvey, getSurveyByIdForAdmin, getAllAnswersBySurveyId};
+// Login functions
+
+async function logIn(credentials) {
+    // call: POST /api/sessions
+    let response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+    });
+    if (response.ok) {
+        const user = await response.json();
+        return user.name;
+    } else {
+        try {
+            const errDetail = await response.json();
+            throw errDetail.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+}
+
+async function logOut() {
+    // call: DELETE /api/sessions/current
+    await fetch('/api/sessions/current', {
+        method: 'DELETE'
+    });
+}
+
+async function getUserInfo() {
+    // call: GET /api/sessions/current
+    const response = await fetch(BASE_URL + '/sessions/current');
+    const userInfo = await response.json();
+    if (response.ok) {
+        return userInfo;
+    } else {
+        throw userInfo;  // an object with the error coming from the server
+    }
+}
+
+
+const API = {
+    getAllSurveys,
+    getAllQuestionsFromSurveyId,
+    getGroupId,
+    submitSingleAnswer,
+    createSurvey,
+    getSurveyByIdForAdmin,
+    getAllAnswersBySurveyId,
+    logIn,
+    logOut,
+    getUserInfo
+};
 export default API;

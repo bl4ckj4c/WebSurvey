@@ -33,17 +33,15 @@
 - POST `/api/createSurvey`
   - request parameters: JSON of all questions of the new survey
   - response body content: nothing (just the HTTP code in the header)
-
-- POST `/api/login`
-  - request parameters and request body content
-  - response body content
-- GET `/api/something`
-  - request parameters
-  - response body content
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- ...
+- POST `/api/sessions`
+  - request parameters: JSON of the user to login
+  - response body content: user if the login was successful, error otherwise
+- DELETE `/api/sessions/current`
+  - request parameters: JSON of the user to logout
+  - response body content: nothing
+- GET `/api/sessions/current`
+  - request parameters: nothing
+  - response body content: JSON of the current logged user, error if the user isn't logged
 
 ## Database Tables
 
@@ -72,6 +70,12 @@
 ![Screenshot](./img/screenshot.jpg)
 
 ## Users Credentials
+
+- `john@polito.it`, `1234abcd`
+- `emily@polito.it`, `5678efgh`
+  
+
+
 
 - username, password (plus any other requested info)
 - username, password (plus any other requested info)
