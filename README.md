@@ -63,7 +63,7 @@
 - `SurveyTitleField` (in `SurveyAdmin.js`): survey title component, it handles the survey title field before actual questions
 - `ViewAnswersOneSurvey` (in `SurveyAdmin.js`): component to render answer from a single user
 - `Login` (in `Login.js`): component to get data for the login
-- `UnauthorizedUserMessage` (in `Login.js`): component to render errro message if page are accessed without permissions
+- `UnauthorizedUserMessage` (in `Login.js`): component to render error message if page are accessed without permissions
 
 (only _main_ components, minor ones may be skipped)
 

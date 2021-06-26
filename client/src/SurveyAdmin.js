@@ -55,10 +55,13 @@ function swapQuestions(pos, dir, questions, setQuestions) {
     }
 }
 
-function deleteQuestion(pos, setQuestions, questions) {
-    let size = questions.length;
+async function deleteQuestion(pos, setQuestions, questions) {
     setQuestions(oldList => oldList.filter(q => q.position !== pos));
-    //setQuestions(oldList => oldList.map((q, index) => q.position = index));
+    setQuestions(oldList => oldList.map((q, index) => {
+        let tmp = Object.create(q);
+        tmp.position = index;
+        return tmp;
+    }));
 }
 
 function SurveysAdmin(props) {
@@ -146,9 +149,9 @@ function AddNewQuestionModal(props) {
     const [answers, setAnswers] = useState([]);
     const [numAnswers, setNumAnswers] = useState(1);
     const [min, setMin] = useState(0);
-    const [validMin, setValidMin] = useState('init');
+    const [validMin, setValidMin] = useState('valid');
     const [max, setMax] = useState(1);
-    const [validMax, setValidMax] = useState('init');
+    const [validMax, setValidMax] = useState('valid');
 
     // States for valid answers
     const [checkedMCQ0, setCheckedMCQ0] = useState('init');
@@ -195,30 +198,44 @@ function AddNewQuestionModal(props) {
             setAnswers(oldList => [...oldList, '']);
     }, []);
 
+    // Switch between open and close question
     useEffect(() => {
         setAllValidInputs(false);
+        setTitle('');
+        setValidTitle('init');
+        setMandatory(false);
+        setNumAnswers(1);
+        setMin(0);
+        setValidMin('valid');
+        setMax(1);
+        setValidMax('valid');
+        setAnswers(['']);
     }, [openClose]);
 
     useEffect(() => {
         setAnswers([]);
         setAllValidInputs(false);
+        setMin(0);
+        setValidMin('valid');
         setMax(1);
+        setValidMax('valid');
         for (let i = 0; i < numAnswers; i++)
             setAnswers(oldList => [...oldList, '']);
         for (let i = 0; i < 10; i++) {
             setCheckedMCQ[i]('init');
-            setValidInputs(old => [...old, false]);
         }
+        setValidInputs([false, false, false, false, false, false, false, false, false, false]);
     }, [numAnswers]);
 
     useEffect(() => {
+        console.log(validInputs);
         let check = true;
-        check = validMin && check;
-        check = validMax && check;
         if (validTitle === 'init' || validTitle === 'invalid')
             check = false;
-        if (openClose === 'close') {
-            for (let i = 0; i < validInputs.length; i++) {
+        if (openClose === 'Closed') {
+            check = (validMin === 'valid') && check;
+            check = (validMax === 'valid') && check;
+            for (let i = 0; i < answers.length; i++) {
                 check = validInputs[i] && check;
                 if (!check)
                     break;
@@ -229,6 +246,16 @@ function AddNewQuestionModal(props) {
         else
             setAllValidInputs(check);
     }, [validInputs, validTitle, validMin, validMax]);
+
+    useEffect(() => {
+        if (min > max || min > numAnswers || max > numAnswers) {
+            setValidMin('invalid');
+            setValidMax('invalid');
+        } else if (min <= numAnswers && max <= numAnswers && min <= max) {
+            setValidMin('valid');
+            setValidMax('valid');
+        }
+    }, [min, max, numAnswers]);
 
     return (
         <Modal show={props.show} onHide={props.handleClose}>
@@ -369,7 +396,7 @@ function AddNewQuestionModal(props) {
                                                          if (event.target.value === '') {
                                                              setCheckedMCQ[index]('invalid');
                                                              setValidInputs(oldList => oldList.map((q, indexBis) => {
-                                                                 if (props.index === indexBis)
+                                                                 if (index === indexBis)
                                                                      return false;
                                                                  else
                                                                      return q;
@@ -377,7 +404,7 @@ function AddNewQuestionModal(props) {
                                                          } else {
                                                              setCheckedMCQ[index]('valid');
                                                              setValidInputs(oldList => oldList.map((q, indexBis) => {
-                                                                 if (props.index === indexBis)
+                                                                 if (index === indexBis)
                                                                      return true;
                                                                  else
                                                                      return q;
@@ -484,20 +511,23 @@ function QuestionsAdmin(props) {
                               setValidSurveyTitle={setValidSurveyTitle}
                               setValid={setValidSurvey}/>
             <br/>
-            {props.questions.map((question, index) =>
-                <>
-                    <QuestionAdmin key={question.id}
-                                   question={question}
-                                   questions={props.questions}
-                                   setQuestions={props.setQuestions}
-                    />
-                    <br/>
-                </>
-            )}
+
+            {
+                props.questions.map((question, index) =>
+                    <>
+                        <QuestionAdmin key={question.id}
+                                       question={question}
+                                       questions={props.questions}
+                                       setQuestions={props.setQuestions}
+                        />
+                        <br/>
+                    </>
+                )
+            }
             <br/>
             <Button variant="success" onClick={handleShow}>Add question</Button>{' '}
             {validSurvey ?
-                <Button variant="dark" type="submit" onClick={handlerSubmitSurvey}>Create</Button>
+                <Button variant="dark" type="submit" onClick={handlerSubmitSurvey}>Create survey</Button>
                 :
                 <Button disabled variant="dark" type="submit">Create</Button>
             }
@@ -550,27 +580,30 @@ function SurveyTitleField(props) {
 function QuestionAdmin(props) {
     // Closed-answer question
     if (props.question.type === 'closed') {
-
         return (
             <Card bg="light">
                 <Card.Header>
-                    <Button variant="danger"
-                            onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}
-                    >
-                        Delete
-                    </Button>
+                    <Row>
+                        <Col sm="2"/>
+                        <Col>
+                            {props.question.mandatory ?
+                                <h5>
+                                    <Badge variant="danger">Mandatory</Badge>
+                                </h5>
+                                :
+                                <>
+                                </>
+                            }
+                        </Col>
+                        <Col sm="2">
+                            <CloseButton
+                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}/>
+                        </Col>
+                    </Row>
                 </Card.Header>
                 <Card.Body>
                     <Card.Title>
                         {props.question.title}
-                        {props.question.mandatory ?
-                            <>
-                                {' '}<Badge variant="danger">Mandatory</Badge>
-                            </>
-                            :
-                            <>
-                            </>
-                        }
                     </Card.Title>
                     <Card.Text>{props.question.question}</Card.Text>
                 </Card.Body>
@@ -651,14 +684,10 @@ function QuestionAdmin(props) {
     }
 
 
-// Open-ended question
+    // Open-ended question
     if (props.question.type === 'open') {
-
         return (
-            <Card
-                //bg="light"
-                bg={props.question.mandatory ? "danger" : "light"}
-            >
+            <Card bg="light">
                 <Card.Header>
                     <Row>
                         <Col sm="2"/>
@@ -673,7 +702,8 @@ function QuestionAdmin(props) {
                             }
                         </Col>
                         <Col sm="2">
-                            <CloseButton onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}/>
+                            <CloseButton
+                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}/>
                         </Col>
                     </Row>
                 </Card.Header>
