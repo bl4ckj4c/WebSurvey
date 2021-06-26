@@ -55,18 +55,22 @@ function swapQuestions(pos, dir, questions, setQuestions) {
     }
 }
 
-async function deleteQuestion(pos, setQuestions, questions) {
+async function deleteQuestion(pos, setQuestions, questions, setNumAnswers) {
     setQuestions(oldList => oldList.filter(q => q.position !== pos));
     setQuestions(oldList => oldList.map((q, index) => {
         let tmp = Object.create(q);
         tmp.position = index;
         return tmp;
     }));
+    setNumAnswers(old => old - 1);
 }
 
 function SurveysAdmin(props) {
     // Survey of a specified admin
     const [surveysAdmin, setSurveysAdmin] = useState([]);
+
+    // Hover information for card style
+    const [mouseEnter, setMouseEnter] = useState(false);
 
     // Loading state
     const [loading, setLoading] = useState(true);
@@ -108,34 +112,53 @@ function SurveysAdmin(props) {
                                                 survey</Button>
                                         </Jumbotron>
                                         :
-                                        surveysAdmin.map((survey, index) =>
-                                            <>
-                                                <Link to={"/admin/survey/" + survey.id} key={survey.id}
-                                                      style={{textDecoration: 'none'}}>
-                                                    <Card bg="light">
-                                                        <Card.Body>
-                                                            <Card.Title>
-                                                                {survey.title}
-                                                            </Card.Title>
-                                                        </Card.Body>
-                                                        <Card.Footer>
-                                                            Number of answers: {survey.numAnswer}
-                                                        </Card.Footer>
-                                                    </Card>
-                                                </Link>
-                                                <br/>
-                                            </>
-                                        )
+                                        <>
+                                            <Row>
+                                                <Col sm="2">
+                                                    <Button variant="danger" onClick={() => setRedirect('back')}>Back</Button>
+                                                </Col>
+                                                <Col>
+                                                    <h4>List of surveys created by you</h4>
+                                                </Col>
+                                                <Col sm="2"/>
+                                            </Row>
+                                            <br/>
+                                            {surveysAdmin.map((survey, index) =>
+                                                <div key={survey.id}>
+                                                    <Link to={"/admin/survey/" + survey.id}
+                                                          style={{textDecoration: 'none'}}>
+                                                        <Card bg="white"
+                                                              border={mouseEnter ? "primary" : "#e5e5e5"}
+                                                              text="dark"
+                                                              onMouseEnter={() => setMouseEnter(true)}
+                                                              onMouseLeave={() => setMouseEnter(false)}>
+                                                            <Card.Body>
+                                                                <Card.Title>
+                                                                    {survey.title}
+                                                                </Card.Title>
+                                                            </Card.Body>
+                                                            <Card.Footer>
+                                                                Number of answers: {survey.numAnswer}
+                                                            </Card.Footer>
+                                                        </Card>
+                                                    </Link>
+                                                    <br/>
+                                                </div>
+                                            )}
+                                        </>
                                 )
                         )
                 )
 
             }
+
         </Container>
-    );
+    )
+        ;
 }
 
-function AddNewQuestionModal(props) {
+function AddNewQuestionModal(props)
+{
     // State to create the modal depending on closed or open question
     const [openClose, setOpenClose] = useState('Open');
     // State for the mandatory option
@@ -457,7 +480,7 @@ function AddNewQuestionModal(props) {
                             max: max,
                             mandatory: mandatory
                         });
-                        props.setValidSurvey(true);
+                        props.setNumAnswers(old => old + 1);
                     }}>
                         Add Question
                     </Button>
@@ -470,10 +493,12 @@ function AddNewQuestionModal(props) {
     );
 }
 
-function QuestionsAdmin(props) {
+function QuestionsAdmin(props)
+{
     const [validSurvey, setValidSurvey] = useState(false);
     const [surveyTitle, setSurveyTitle] = useState('');
     const [validSurveyTitle, setValidSurveyTitle] = useState('init');
+    const [numAnswers, setNumAnswers] = useState(0);
 
     // State and handler for the modal
     const [show, setShow] = useState(false);
@@ -492,11 +517,18 @@ function QuestionsAdmin(props) {
     // Redirect
     const [redirect, setRedirect] = useState(false);
     // Create the new survey
-    const handlerSubmitSurvey = () => {
+    const handlerSubmitSurvey = (event) => {
         API.createSurvey(surveyTitle, props.questions, props.owner)
             .then(() => setRedirect(true))
             .catch(() => setRedirect(true));
     }
+
+    useEffect(() => {
+        if (validSurveyTitle === 'valid' && numAnswers > 0)
+            setValidSurvey(true);
+        else
+            setValidSurvey(false);
+    }, [validSurveyTitle, numAnswers]);
 
     if (redirect) {
         props.setQuestions([]);
@@ -508,8 +540,7 @@ function QuestionsAdmin(props) {
             <SurveyTitleField surveyTitle={surveyTitle}
                               setSurveyTitle={setSurveyTitle}
                               validSurveyTitle={validSurveyTitle}
-                              setValidSurveyTitle={setValidSurveyTitle}
-                              setValid={setValidSurvey}/>
+                              setValidSurveyTitle={setValidSurveyTitle}/>
             <br/>
 
             {
@@ -519,18 +550,30 @@ function QuestionsAdmin(props) {
                                        question={question}
                                        questions={props.questions}
                                        setQuestions={props.setQuestions}
+                                       setNumAnswers={setNumAnswers}
                         />
                         <br/>
                     </>
                 )
             }
             <br/>
-            <Button variant="success" onClick={handleShow}>Add question</Button>{' '}
-            {validSurvey ?
-                <Button variant="dark" type="submit" onClick={handlerSubmitSurvey}>Create survey</Button>
-                :
-                <Button disabled variant="dark" type="submit">Create</Button>
-            }
+            <Row>
+                <Col sm="2"/>
+                <Col sm="2">
+                    <Button variant="danger" onClick={() => setRedirect(true)}>Back</Button>
+                </Col>
+                <Col>
+                    <Button variant="dark" onClick={handleShow}>Add question</Button>
+                </Col>
+                <Col sm="2">
+                    {validSurvey ?
+                        <Button variant="success" type="button" onClick={handlerSubmitSurvey}>Create survey</Button>
+                        :
+                        <Button disabled variant="success" type="button">Create Survey</Button>
+                    }
+                </Col>
+                <Col sm="2"/>
+            </Row>
             <br/>
             <AddNewQuestionModal show={show}
                                  setShow={setShow}
@@ -539,13 +582,14 @@ function QuestionsAdmin(props) {
                                  questions={props.questions}
                                  setQuestions={props.setQuestions}
                                  addQuestion={handlerAddQuestion}
-                                 setValidSurvey={setValidSurvey}
+                                 setNumAnswers={setNumAnswers}
             />
         </Container>
     );
 }
 
-function SurveyTitleField(props) {
+function SurveyTitleField(props)
+{
     return (
         <Card bg="light">
             <Card.Body>
@@ -559,13 +603,11 @@ function SurveyTitleField(props) {
 
                                       if (event.target.value === '') {
                                           props.setValidSurveyTitle('invalid');
-                                          props.setValid(false);
                                       } else {
                                           props.setValidSurveyTitle('valid');
-                                          props.setValid(true);
                                       }
                                   }}
-                                  isInvalid={props.setValidSurveyTitle === 'invalid'}
+                                  isInvalid={props.validSurveyTitle === 'invalid'}
                                   type="text"
                                   placeholder="Enter here the title of the survey"/>
                     <Form.Control.Feedback type='invalid'>
@@ -577,7 +619,8 @@ function SurveyTitleField(props) {
     );
 }
 
-function QuestionAdmin(props) {
+function QuestionAdmin(props)
+{
     // Closed-answer question
     if (props.question.type === 'closed') {
         return (
@@ -597,7 +640,7 @@ function QuestionAdmin(props) {
                         </Col>
                         <Col sm="2">
                             <CloseButton
-                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}/>
+                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions.props.setNumAnswers)}/>
                         </Col>
                     </Row>
                 </Card.Header>
@@ -703,7 +746,7 @@ function QuestionAdmin(props) {
                         </Col>
                         <Col sm="2">
                             <CloseButton
-                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}/>
+                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions, props.setNumAnswers)}/>
                         </Col>
                     </Row>
                 </Card.Header>
@@ -779,7 +822,8 @@ function QuestionAdmin(props) {
     }
 }
 
-function ViewAnswersOneSurvey(props) {
+function ViewAnswersOneSurvey(props)
+{
     // Answers by one user
     const [answers, setAnswers] = useState([]);
 
@@ -878,7 +922,8 @@ function ViewAnswersOneSurvey(props) {
     );
 }
 
-function ViewAnswersAdmin(props) {
+function ViewAnswersAdmin(props)
+{
     // Closed-answer question
     if (props.question.type === 'closed') {
         let answerIndex = JSON.parse(props.question.answer);
@@ -930,7 +975,8 @@ function ViewAnswersAdmin(props) {
     }
 }
 
-function AdminButtons(props) {
+function AdminButtons(props)
+{
     // Hover information for card style
     const [mouseEnter1, setMouseEnter1] = useState(false);
     const [mouseEnter2, setMouseEnter2] = useState(false);
@@ -966,5 +1012,8 @@ function AdminButtons(props) {
 
 export
 {
-    SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey, AdminButtons
+    SurveysAdmin,
+        QuestionsAdmin,
+        ViewAnswersOneSurvey,
+        AdminButtons
 }

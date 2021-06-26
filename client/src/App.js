@@ -3,7 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import {BrowserRouter as Router, Link, Redirect, Route, Switch} from 'react-router-dom';
 import {useEffect, useState} from "react";
-import {Card, Container, Spinner} from "react-bootstrap";
+import {Card, Container, Row, Spinner} from "react-bootstrap";
 import {Login, UnauthorizedUserMessage} from "./Login";
 import {Surveys, Questions} from "./Survey";
 import {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey, AdminButtons} from "./SurveyAdmin";
