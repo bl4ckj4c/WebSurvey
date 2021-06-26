@@ -6,19 +6,29 @@ import API from "./API";
 function Surveys(props) {
     return (
         <Container className="justify-content-center align-items-center">
-            {props.surveys.map((survey, index) =>
-                <>
-                    <Link to={"/survey/" + survey.id} key={survey.id} style={{textDecoration: 'none'}}>
-                        <Card bg="light">
-                            <Card.Body>
-                                <Card.Title>
-                                    {survey.title}
-                                </Card.Title>
-                            </Card.Body>
-                        </Card>
-                    </Link>
-                    <br/>
-                </>
+            {props.surveys.map((survey, index) => {
+                    // Hover information for card style
+                    const [mouseEnter, setMouseEnter] = useState(false);
+
+                    return (
+                        <div key={survey.id}>
+                            <Link to={"/survey/" + survey.id} style={{textDecoration: 'none'}}>
+                                <Card bg="white"
+                                      border={mouseEnter ? "primary" : "#e5e5e5"}
+                                      text="dark"
+                                      onMouseEnter={() => setMouseEnter(true)}
+                                      onMouseLeave={() => setMouseEnter(false)}>
+                                    <Card.Body>
+                                        <Card.Title>
+                                            {survey.title}
+                                        </Card.Title>
+                                    </Card.Body>
+                                </Card>
+                            </Link>
+                            <br/>
+                        </div>
+                    );
+                }
             )}
         </Container>
     );
@@ -79,14 +89,7 @@ function Questions(props) {
     return (
         <Container className="justify-content-center align-items-center">
             {loading ?
-                <>
-                    <br/>
-                    <br/>
-                    <Spinner animation="border" variant="primary"/>
-                    <br/>
-                    <br/>
-                    <br/>
-                </>
+                <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                 :
                 <>
                     <br/>
@@ -234,50 +237,55 @@ function Question(props) {
                     <Card.Text>Minimum answers: {props.question.min}</Card.Text>
                     <Card.Text>Maximum answers: {props.question.max}</Card.Text>
                 </Card.Body>
-                <ListGroup className="list-group-flush">
-                    {answers.map((answer, index) =>
-                        <ListGroupItem key={index}>
-                            <Form.Group controlId={"answer" + index}>
-                                <Form.Check variant='success'
-                                            label={answer}
-                                            onChange={(event) => {
-                                                setCheckedMCQ[index](event.target.checked);
-                                                let currChecked = numberMCQChecked;
-                                                if (event.target.checked) {
-                                                    currChecked++;
-                                                    setNumberMCQChecked(old => old + 1);
-                                                } else {
-                                                    currChecked--;
-                                                    setNumberMCQChecked(old => old - 1);
-                                                }
-                                                if (currChecked < props.question.min || currChecked > props.question.max) {
-                                                    setValidMCQ('invalid');
-                                                    props.setValidityStates(oldList => oldList.map((q, index) => {
-                                                        if (props.index === index)
-                                                            return false;
-                                                        else
-                                                            return q;
-                                                    }));
-                                                } else {
-                                                    setValidMCQ('valid');
-                                                    props.setValidityStates(oldList => oldList.map((q, index) => {
-                                                        if (props.index === index)
-                                                            return true;
-                                                        else
-                                                            return q;
-                                                    }));
-                                                }
-                                            }}
-                                            checked={checkedMCQ[index]}/>
-                            </Form.Group>
-                        </ListGroupItem>
-                    )}
-                </ListGroup>
-                {validMCQ === 'invalid' ?
-                    <Alert variant="danger">Please respect minimum and maximum parameters</Alert>
-                    :
-                    <></>
-                }
+                <Container className="justify-content-center align-items-center">
+                    <ListGroup>
+                        {answers.map((answer, index) =>
+                            <ListGroupItem key={index}>
+                                <Form.Group controlId={"answer" + index}>
+                                    <Form.Check variant='success'
+                                                label={answer}
+                                                onChange={(event) => {
+                                                    setCheckedMCQ[index](event.target.checked);
+                                                    let currChecked = numberMCQChecked;
+                                                    if (event.target.checked) {
+                                                        currChecked++;
+                                                        setNumberMCQChecked(old => old + 1);
+                                                    } else {
+                                                        currChecked--;
+                                                        setNumberMCQChecked(old => old - 1);
+                                                    }
+                                                    if (currChecked < props.question.min || currChecked > props.question.max) {
+                                                        setValidMCQ('invalid');
+                                                        props.setValidityStates(oldList => oldList.map((q, index) => {
+                                                            if (props.index === index)
+                                                                return false;
+                                                            else
+                                                                return q;
+                                                        }));
+                                                    } else {
+                                                        setValidMCQ('valid');
+                                                        props.setValidityStates(oldList => oldList.map((q, index) => {
+                                                            if (props.index === index)
+                                                                return true;
+                                                            else
+                                                                return q;
+                                                        }));
+                                                    }
+                                                }}
+                                                checked={checkedMCQ[index]}/>
+                                </Form.Group>
+                            </ListGroupItem>
+                        )}
+                    </ListGroup>
+                    {validMCQ === 'invalid' ?
+                        <>
+                            <br/>
+                            <Alert variant="danger">Please respect minimum and maximum parameters</Alert>
+                        </>
+                        :
+                        <br/>
+                    }
+                </Container>
             </Card>
         );
     }
@@ -300,38 +308,40 @@ function Question(props) {
                         }
                     </Card.Title>
                 </Card.Body>
-                <Form.Group controlId="openAnswer">
-                    <Form.Control value={openAnswer}
-                                  onChange={(event) => {
-                                      setOpenAnswer(event.target.value);
+                <Container className="justify-content-center align-items-center">
+                    <Form.Group controlId="openAnswer">
+                        <Form.Control value={openAnswer}
+                                      onChange={(event) => {
+                                          setOpenAnswer(event.target.value);
 
-                                      if (props.question.mandatory === 1 && event.target.value === '') {
-                                          setValidOpenAnswer('invalid');
-                                          props.setValidityStates(oldList => oldList.map((q, index) => {
-                                              if (props.index === index)
-                                                  return false;
-                                              else
-                                                  return q;
-                                          }));
-                                      } else {
-                                          setValidOpenAnswer('valid');
-                                          props.setValidityStates(oldList => oldList.map((q, index) => {
-                                              if (props.index === index)
-                                                  return true;
-                                              else
-                                                  return q;
-                                          }));
-                                      }
-                                  }}
-                                  isInvalid={validOpenAnswer === 'invalid'}
-                                  as="textarea"
-                                  rows={5}
-                                  maxLength={200}
-                                  placeholder="Enter here your answer"/>
-                    <Form.Control.Feedback type='invalid'>
-                        The answer cannot be empty, please fill the field
-                    </Form.Control.Feedback>
-                </Form.Group>
+                                          if (props.question.mandatory === 1 && event.target.value === '') {
+                                              setValidOpenAnswer('invalid');
+                                              props.setValidityStates(oldList => oldList.map((q, index) => {
+                                                  if (props.index === index)
+                                                      return false;
+                                                  else
+                                                      return q;
+                                              }));
+                                          } else {
+                                              setValidOpenAnswer('valid');
+                                              props.setValidityStates(oldList => oldList.map((q, index) => {
+                                                  if (props.index === index)
+                                                      return true;
+                                                  else
+                                                      return q;
+                                              }));
+                                          }
+                                      }}
+                                      isInvalid={validOpenAnswer === 'invalid'}
+                                      as="textarea"
+                                      rows={5}
+                                      maxLength={200}
+                                      placeholder="Enter here your answer"/>
+                        <Form.Control.Feedback type='invalid'>
+                            The answer cannot be empty, please fill the field
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                </Container>
             </Card>
         );
     }
@@ -345,26 +355,28 @@ function UserNameField(props) {
             <Card.Body>
                 <Card.Title>Username</Card.Title>
             </Card.Body>
-            <Form.Group controlId="openAnswer">
-                <Form.Control value={props.username}
-                              onChange={(event) => {
-                                  props.setUsername(event.target.value);
+            <Container className="justify-content-center align-items-center">
+                <Form.Group controlId="openAnswer">
+                    <Form.Control value={props.username}
+                                  onChange={(event) => {
+                                      props.setUsername(event.target.value);
 
-                                  if (event.target.value === '') {
-                                      setValidUsername('invalid');
-                                      props.setValidUsername(false);
-                                  } else {
-                                      setValidUsername('valid');
-                                      props.setValidUsername(true);
-                                  }
-                              }}
-                              isInvalid={validUsername === 'invalid'}
-                              type="text"
-                              placeholder="Enter here your name"/>
-                <Form.Control.Feedback type='invalid'>
-                    Insert your username please
-                </Form.Control.Feedback>
-            </Form.Group>
+                                      if (event.target.value === '') {
+                                          setValidUsername('invalid');
+                                          props.setValidUsername(false);
+                                      } else {
+                                          setValidUsername('valid');
+                                          props.setValidUsername(true);
+                                      }
+                                  }}
+                                  isInvalid={validUsername === 'invalid'}
+                                  type="text"
+                                  placeholder="Enter here your name"/>
+                    <Form.Control.Feedback type='invalid'>
+                        Insert your username please
+                    </Form.Control.Feedback>
+                </Form.Group>
+            </Container>
         </Card>
     );
 }

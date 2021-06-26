@@ -62,6 +62,8 @@
 - `QuestionAdmin` (in `SurveyAdmin.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`); this component just shows how the question will be displayed to the users, but fields cannot be filled by the admin during the survey creation process
 - `SurveyTitleField` (in `SurveyAdmin.js`): survey title component, it handles the survey title field before actual questions
 - `ViewAnswersOneSurvey` (in `SurveyAdmin.js`): component to render answer from a single user
+- `Login` (in `Login.js`): component to get data for the login
+- `UnauthorizedUserMessage` (in `Login.js`): component to render errro message if page are accessed without permissions
 
 (only _main_ components, minor ones may be skipped)
 

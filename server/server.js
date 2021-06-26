@@ -48,18 +48,19 @@ app.use(express.json());
 
 // custom middleware: check if a given request is coming from an authenticated user
 const isLoggedIn = (req, res, next) => {
+    //return next();
     if(req.isAuthenticated())
         return next();
 
-    return res.status(401).json({ error: 'not authenticated'});
+    return res.status(401).json({ error: 'Not authenticated'});
 }
 
 // set up the session
 app.use(session({
     // by default, Passport uses a MemoryStore to keep track of the sessions
     secret: 'a secret sentence not to share with anybody and anywhere, used to sign the session ID cookie',
-    resave: false,
-    saveUninitialized: false
+    resave: true,
+    saveUninitialized: true
 }));
 
 // tell passport to use session cookies
@@ -80,7 +81,6 @@ app.get('/api/surveys', (req, res) => {
 })
 
 app.get('/api/survey/:id', (req, res) => {
-    //if(req.isAuthenticated())
     surveyDao.getAllQuestionsFromSurveyId(req.params.id)
         .then(questions => res.json(questions))
         .catch(() => res.status(500).end());
@@ -98,7 +98,9 @@ app.post('/api/submit', (req, res) => {
         .catch(() => res.status(500).end());
 })
 
-app.post('/api/createSurvey', async (req, res) => {
+app.post('/api/createSurvey',
+    isLoggedIn,
+    async (req, res) => {
     let responseCode = 201;
 
     let title = req.body.title;
@@ -112,13 +114,17 @@ app.post('/api/createSurvey', async (req, res) => {
     res.status(responseCode).end();
 })
 
-app.get('/api/surveys/admin/:id', (req, res) => {
+app.get('/api/surveys/admin/:id',
+    isLoggedIn,
+    (req, res) => {
     surveyDao.getAllSurveysByAdminId(req.params.id)
         .then(surveys => res.json(surveys))
         .catch(() => res.status(500).end());
 })
 
-app.get('/api/survey/:surveyId/admin/:adminId', (req, res) => {
+app.get('/api/survey/:surveyId/admin/:adminId',
+    isLoggedIn,
+    (req, res) => {
     surveyDao.getAllAnswersFromSurveyId(req.params.surveyId, req.params.adminId)
         .then(surveys => res.json(surveys))
         .catch(() => res.status(500).end());
@@ -162,5 +168,5 @@ app.get('/api/sessions/current', (req, res) => {
     if(req.isAuthenticated()) {
         res.status(200).json(req.user);}
     else
-        res.status(401).json({error: 'Unauthenticated user!'});;
+        res.status(401).json({error: 'Unauthenticated user!'});
 });

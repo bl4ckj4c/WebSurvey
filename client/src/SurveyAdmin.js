@@ -9,7 +9,7 @@ import {
     Badge,
     Col,
     InputGroup,
-    FormControl, Row, Spinner, Pagination, ButtonGroup
+    FormControl, Row, Spinner, Pagination, ButtonGroup, Jumbotron, CloseButton
 } from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
@@ -68,6 +68,8 @@ function SurveysAdmin(props) {
     // Loading state
     const [loading, setLoading] = useState(true);
 
+    const [redirect, setRedirect] = useState('');
+
     useEffect(() => {
         API.getSurveyByIdForAdmin(props.admin)
             .then(r => {
@@ -82,43 +84,51 @@ function SurveysAdmin(props) {
     return (
         <Container className="justify-content-center align-items-center">
             {loading ?
-                <>
-                    <br/>
-                    <br/>
-                    <Spinner animation="border" variant="primary"/>
-                    <br/>
-                    <br/>
-                    <br/>
-                </>
+                <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                 :
-                surveysAdmin.map((survey, index) =>
-                    <>
-                        <Link to={"/admin/survey/" + survey.id} key={survey.id} style={{textDecoration: 'none'}}>
-                            <Card bg="light">
-                                <Card.Body>
-                                    <Card.Title>
-                                        {survey.title}
-                                    </Card.Title>
-                                </Card.Body>
-                                <Card.Footer>
-                                    Number of answers: {survey.numAnswer}
-                                </Card.Footer>
-                            </Card>
-                        </Link>
-                        <br/>
-                    </>
+                (redirect === 'new' ?
+                        <Redirect to="/admin/newSurvey"/>
+                        :
+                        (
+                            redirect === 'back' ?
+                                <Redirect to="/admin"/>
+                                :
+                                (
+                                    surveysAdmin.length === 0 ?
+                                        <Jumbotron style={{"marginTop": "50px"}}>
+                                            <h3>No survey found 😢</h3>
+                                            <br/>
+                                            <br/>
+                                            <Button variant="dark" onClick={() => setRedirect('back')}>Go back</Button>
+                                            {' '}
+                                            <Button variant="success" onClick={() => setRedirect('new')}>Create a
+                                                survey</Button>
+                                        </Jumbotron>
+                                        :
+                                        surveysAdmin.map((survey, index) =>
+                                            <>
+                                                <Link to={"/admin/survey/" + survey.id} key={survey.id}
+                                                      style={{textDecoration: 'none'}}>
+                                                    <Card bg="light">
+                                                        <Card.Body>
+                                                            <Card.Title>
+                                                                {survey.title}
+                                                            </Card.Title>
+                                                        </Card.Body>
+                                                        <Card.Footer>
+                                                            Number of answers: {survey.numAnswer}
+                                                        </Card.Footer>
+                                                    </Card>
+                                                </Link>
+                                                <br/>
+                                            </>
+                                        )
+                                )
+                        )
                 )
+
             }
         </Container>
-        /*<ListGroup>
-            {surveysAdmin.map((survey, index) =>
-                <Link to={"/admin/survey/" + survey.id} key={survey.id}>
-                    <ListGroup.Item action>
-                        {survey.title}
-                    </ListGroup.Item>
-                </Link>
-            )}
-        </ListGroup>*/
     );
 }
 
@@ -468,7 +478,6 @@ function QuestionsAdmin(props) {
 
     return (
         <Container className="justify-content-center align-items-center">
-            <br/>
             <SurveyTitleField surveyTitle={surveyTitle}
                               setSurveyTitle={setSurveyTitle}
                               validSurveyTitle={validSurveyTitle}
@@ -512,26 +521,28 @@ function SurveyTitleField(props) {
             <Card.Body>
                 <Card.Title>Survey Title</Card.Title>
             </Card.Body>
-            <Form.Group controlId="surveyTitle">
-                <Form.Control value={props.surveyTitle}
-                              onChange={(event) => {
-                                  props.setSurveyTitle(event.target.value);
+            <Container className="justify-content-center align-items-center">
+                <Form.Group controlId="surveyTitle">
+                    <Form.Control value={props.surveyTitle}
+                                  onChange={(event) => {
+                                      props.setSurveyTitle(event.target.value);
 
-                                  if (event.target.value === '') {
-                                      props.setValidSurveyTitle('invalid');
-                                      props.setValid(false);
-                                  } else {
-                                      props.setValidSurveyTitle('valid');
-                                      props.setValid(true);
-                                  }
-                              }}
-                              isInvalid={props.setValidSurveyTitle === 'invalid'}
-                              type="text"
-                              placeholder="Enter here the title of the survey"/>
-                <Form.Control.Feedback type='invalid'>
-                    Please insert the title of the survey
-                </Form.Control.Feedback>
-            </Form.Group>
+                                      if (event.target.value === '') {
+                                          props.setValidSurveyTitle('invalid');
+                                          props.setValid(false);
+                                      } else {
+                                          props.setValidSurveyTitle('valid');
+                                          props.setValid(true);
+                                      }
+                                  }}
+                                  isInvalid={props.setValidSurveyTitle === 'invalid'}
+                                  type="text"
+                                  placeholder="Enter here the title of the survey"/>
+                    <Form.Control.Feedback type='invalid'>
+                        Please insert the title of the survey
+                    </Form.Control.Feedback>
+                </Form.Group>
+            </Container>
         </Card>
     );
 }
@@ -563,15 +574,24 @@ function QuestionAdmin(props) {
                     </Card.Title>
                     <Card.Text>{props.question.question}</Card.Text>
                 </Card.Body>
-                <ListGroup className="list-group-flush">
-                    {props.question.answers.map((answer, index) =>
-                        <ListGroupItem key={index}>
-                            <Form.Group controlId={"answer" + index}>
-                                <Form.Check disabled variant='success' label={answer}/>
-                            </Form.Group>
-                        </ListGroupItem>
-                    )}
-                </ListGroup>
+                <Container className="justify-content-center align-items-center">
+                    <ListGroup>
+                        {props.question.answers.map((answer, index) =>
+                            <ListGroupItem key={index}>
+                                <Row>
+                                    <Col sm="1">
+                                        {index + 1 + "."}
+                                    </Col>
+                                    <Col>
+                                        {answer}
+                                    </Col>
+                                    <Col sm="1"/>
+                                </Row>
+                            </ListGroupItem>
+                        )}
+                    </ListGroup>
+                    <br/>
+                </Container>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
                     {props.question.position === 0 ?
                         <>
@@ -631,39 +651,45 @@ function QuestionAdmin(props) {
     }
 
 
-    // Open-ended question
+// Open-ended question
     if (props.question.type === 'open') {
 
         return (
-            <Card bg="light">
+            <Card
+                //bg="light"
+                bg={props.question.mandatory ? "danger" : "light"}
+            >
                 <Card.Header>
-                    <Button variant="danger"
-                            onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}
-                    >
-                        Delete
-                    </Button>
+                    <Row>
+                        <Col sm="2"/>
+                        <Col>
+                            {props.question.mandatory ?
+                                <h5>
+                                    <Badge variant="danger">Mandatory</Badge>
+                                </h5>
+                                :
+                                <>
+                                </>
+                            }
+                        </Col>
+                        <Col sm="2">
+                            <CloseButton onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions)}/>
+                        </Col>
+                    </Row>
                 </Card.Header>
                 <Card.Body>
                     <Card.Title>
                         {props.question.title}
-                        {props.question.mandatory ?
-                            <>
-                                {' '}<Badge variant="danger">Mandatory</Badge>
-                            </>
-                            :
-                            <>
-                            </>
-                        }
                     </Card.Title>
                 </Card.Body>
-                <Form.Group controlId="openAnswer">
-                    <Form.Control value={"Open answer text field"}
-                                  as="textarea"
-                                  rows={1}
-                                  placeholder="Enter here your answer"
-                                  disabled
-                    />
-                </Form.Group>
+                <Container className="justify-content-center align-items-center">
+                    <Form.Group controlId="openAnswer">
+                        <Form.Control value={"Open answer text field"}
+                                      type="text"
+                                      disabled
+                        />
+                    </Form.Group>
+                </Container>
                 <Card.Footer className="text-muted" defaultActiveKey="#up">
                     {props.question.position === 0 ?
                         <>
@@ -768,14 +794,7 @@ function ViewAnswersOneSurvey(props) {
     return (
         <Container className="justify-content-center align-items-center">
             {loading ?
-                <>
-                    <br/>
-                    <br/>
-                    <Spinner animation="border" variant="primary"/>
-                    <br/>
-                    <br/>
-                    <br/>
-                </>
+                <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                 :
                 <>
                     <br/>
@@ -881,4 +900,41 @@ function ViewAnswersAdmin(props) {
     }
 }
 
-export {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey}
+function AdminButtons(props) {
+    // Hover information for card style
+    const [mouseEnter1, setMouseEnter1] = useState(false);
+    const [mouseEnter2, setMouseEnter2] = useState(false);
+
+    return (
+        <Container className="justify-content-center align-items-center">
+            <Link to="/admin/newSurvey" style={{textDecoration: 'none'}}>
+                <Card bg="white"
+                      border={mouseEnter1 ? "primary" : "#e5e5e5"}
+                      text="dark"
+                      onMouseEnter={() => setMouseEnter1(true)}
+                      onMouseLeave={() => setMouseEnter1(false)}>
+                    <Card.Body>
+                        <Card.Title>Create a new survey</Card.Title>
+                    </Card.Body>
+                </Card>
+            </Link>
+            <br/>
+            <Link to="/admin/viewSurveys" style={{textDecoration: 'none'}}>
+                <Card bg="white"
+                      border={mouseEnter2 ? "primary" : "#e5e5e5"}
+                      text="dark"
+                      onMouseEnter={() => setMouseEnter2(true)}
+                      onMouseLeave={() => setMouseEnter2(false)}>
+                    <Card.Body>
+                        <Card.Title>See result of your surveys</Card.Title>
+                    </Card.Body>
+                </Card>
+            </Link>
+        </Container>
+    );
+}
+
+export
+{
+    SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey, AdminButtons
+}

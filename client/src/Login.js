@@ -1,4 +1,4 @@
-import {Button, Container, Form, Row, Col, Alert} from "react-bootstrap";
+import {Button, Container, Form, Row, Col, Alert, Image, Jumbotron} from "react-bootstrap";
 import {Redirect} from "react-router-dom";
 import {useEffect, useState} from "react";
 
@@ -12,7 +12,7 @@ function Login(props) {
     const [redirect, setRedirect] = useState(false);
 
     useEffect(() => {
-        if(props.loggedIn)
+        if (props.loggedIn)
             setRedirect(true);
     }, [props.loggedIn]);
 
@@ -101,4 +101,28 @@ function Login(props) {
     );
 }
 
-export {Login};
+function UnauthorizedUserMessage(props) {
+    const [redirect, setRedirect] = useState(false);
+
+    return (
+        redirect ?
+            <Redirect to="/"/>
+            :
+            <Container className="justify-content-center align-items-center">
+                <Jumbotron style={{"marginTop": "100px"}}>
+                    <h2 className="text-danger">Unauthorized User</h2>
+                    <br/>
+                    <h4>
+                        You shall not pass! 🧙
+                    </h4>
+                    <p>
+                        If you are an admin please log in from the home page.
+                    </p>
+                    <br/>
+                    <Button variant="danger" onClick={() => setRedirect(true)}>Go Home</Button>
+                </Jumbotron>
+            </Container>
+    );
+}
+
+export {Login, UnauthorizedUserMessage};
