@@ -115,7 +115,8 @@ function SurveysAdmin(props) {
                                         <>
                                             <Row>
                                                 <Col sm="2">
-                                                    <Button variant="danger" onClick={() => setRedirect('back')}>Back</Button>
+                                                    <Button variant="danger"
+                                                            onClick={() => setRedirect('back')}>Back</Button>
                                                 </Col>
                                                 <Col>
                                                     <h4>List of surveys created by you</h4>
@@ -157,8 +158,7 @@ function SurveysAdmin(props) {
         ;
 }
 
-function AddNewQuestionModal(props)
-{
+function AddNewQuestionModal(props) {
     // State to create the modal depending on closed or open question
     const [openClose, setOpenClose] = useState('Open');
     // State for the mandatory option
@@ -493,8 +493,7 @@ function AddNewQuestionModal(props)
     );
 }
 
-function QuestionsAdmin(props)
-{
+function QuestionsAdmin(props) {
     const [validSurvey, setValidSurvey] = useState(false);
     const [surveyTitle, setSurveyTitle] = useState('');
     const [validSurveyTitle, setValidSurveyTitle] = useState('init');
@@ -588,8 +587,7 @@ function QuestionsAdmin(props)
     );
 }
 
-function SurveyTitleField(props)
-{
+function SurveyTitleField(props) {
     return (
         <Card bg="light">
             <Card.Body>
@@ -619,8 +617,7 @@ function SurveyTitleField(props)
     );
 }
 
-function QuestionAdmin(props)
-{
+function QuestionAdmin(props) {
     // Closed-answer question
     if (props.question.type === 'closed') {
         return (
@@ -822,13 +819,15 @@ function QuestionAdmin(props)
     }
 }
 
-function ViewAnswersOneSurvey(props)
-{
+function ViewAnswersOneSurvey(props) {
     // Answers by one user
     const [answers, setAnswers] = useState([]);
 
     // Loading
     const [loading, setLoading] = useState(true);
+
+    // Redirect to previous page
+    const [redirect, setRedirect] = useState(false);
 
     // Current answer shown
     const [currentAnswer, setCurrentAnswer] = useState(0);
@@ -865,6 +864,9 @@ function ViewAnswersOneSurvey(props)
         setCurrentAnswersArray(tmpArray);
     }, [currentAnswer, loading]);
 
+    if (redirect)
+        return (<Redirect to="/admin/viewSurveys"/>);
+
     return (
         <Container className="justify-content-center align-items-center">
             {loading ?
@@ -872,16 +874,15 @@ function ViewAnswersOneSurvey(props)
                 :
                 <>
                     <br/>
-                    <Card bg="light">
-                        <Card.Body>
-                            <Card.Title>
-                                User
-                            </Card.Title>
-                            <Card.Text>
-                                {answers[groupsId[currentAnswer]][0].user}
-                            </Card.Text>
-                        </Card.Body>
-                    </Card>
+                    <Row>
+                        <Col sm="2">
+                            <Button variant="danger" type="button" onClick={() => setRedirect(true)}>Back</Button>
+                        </Col>
+                        <Col>
+                            <h4>{answers[groupsId[currentAnswer]][0].user}</h4>
+                        </Col>
+                        <Col sm="2"/>
+                    </Row>
                     <br/>
                     {currentAnswersArray.map(question =>
                         <>
@@ -922,8 +923,7 @@ function ViewAnswersOneSurvey(props)
     );
 }
 
-function ViewAnswersAdmin(props)
-{
+function ViewAnswersAdmin(props) {
     // Closed-answer question
     if (props.question.type === 'closed') {
         let answerIndex = JSON.parse(props.question.answer);
@@ -935,20 +935,39 @@ function ViewAnswersAdmin(props)
                         {props.question.title}
                     </Card.Title>
                 </Card.Body>
-                <ListGroup className="list-group-flush">
-                    {answers.map((answer, index) => {
-                        let checked = false;
-                        if (answerIndex.find(item => item === (index + 1)))
-                            checked = true;
-                        return (
-                            <ListGroupItem key={index}>
-                                <Form.Group controlId={"answer" + index}>
-                                    <Form.Check disabled checked={checked} variant='success' label={answer}/>
-                                </Form.Group>
-                            </ListGroupItem>
-                        );
-                    })}
-                </ListGroup>
+                <Container className="justify-content-center align-items-center">
+                    <ListGroup className="list-group">
+                        {answers.map((answer, index) => {
+                            let checked = false;
+                            if (answerIndex.find(item => item === (index + 1)))
+                                checked = true;
+                            return (
+                                <ListGroupItem key={index} className={checked ? "bg-success" : "bg-white"}>
+                                    <Row>
+                                        <Col sm="1">
+                                            {
+                                                checked ?
+                                                    <p className="text-white">{index + 1 + "."}</p>
+                                                    :
+                                                    <p className="text-dark">{index + 1 + "."}</p>
+                                            }
+                                        </Col>
+                                        <Col>
+                                            {
+                                                checked ?
+                                                    <p className="text-white">{answer}</p>
+                                                    :
+                                                    <p className="text-dark">{answer}</p>
+                                            }
+                                        </Col>
+                                        <Col sm="1"/>
+                                    </Row>
+                                </ListGroupItem>
+                            );
+                        })}
+                    </ListGroup>
+                    <br/>
+                </Container>
             </Card>
         );
     }
@@ -975,37 +994,49 @@ function ViewAnswersAdmin(props)
     }
 }
 
-function AdminButtons(props)
-{
+function AdminButtons(props) {
     // Hover information for card style
     const [mouseEnter1, setMouseEnter1] = useState(false);
     const [mouseEnter2, setMouseEnter2] = useState(false);
 
     return (
         <Container className="justify-content-center align-items-center">
-            <Link to="/admin/newSurvey" style={{textDecoration: 'none'}}>
-                <Card bg="white"
-                      border={mouseEnter1 ? "primary" : "#e5e5e5"}
-                      text="dark"
-                      onMouseEnter={() => setMouseEnter1(true)}
-                      onMouseLeave={() => setMouseEnter1(false)}>
-                    <Card.Body>
-                        <Card.Title>Create a new survey</Card.Title>
-                    </Card.Body>
-                </Card>
-            </Link>
+            <Row>
+                <Col sm="2"/>
+                <Col>
+                    <Link to="/admin/newSurvey" style={{textDecoration: 'none'}}>
+                        <Card bg="white"
+                              border={mouseEnter1 ? "primary" : "#e5e5e5"}
+                              text="dark"
+                              onMouseEnter={() => setMouseEnter1(true)}
+                              onMouseLeave={() => setMouseEnter1(false)}>
+                            <Card.Body>
+                                <Card.Title>Create a new survey</Card.Title>
+                            </Card.Body>
+                        </Card>
+                    </Link>
+                </Col>
+                <Col sm="2"/>
+            </Row>
             <br/>
-            <Link to="/admin/viewSurveys" style={{textDecoration: 'none'}}>
-                <Card bg="white"
-                      border={mouseEnter2 ? "primary" : "#e5e5e5"}
-                      text="dark"
-                      onMouseEnter={() => setMouseEnter2(true)}
-                      onMouseLeave={() => setMouseEnter2(false)}>
-                    <Card.Body>
-                        <Card.Title>See result of your surveys</Card.Title>
-                    </Card.Body>
-                </Card>
-            </Link>
+            <Row>
+                <Col sm="2"/>
+                <Col>
+                    <Link to="/admin/viewSurveys" style={{textDecoration: 'none'}}>
+                        <Card bg="white"
+                              border={mouseEnter2 ? "primary" : "#e5e5e5"}
+                              text="dark"
+                              onMouseEnter={() => setMouseEnter2(true)}
+                              onMouseLeave={() => setMouseEnter2(false)}>
+                            <Card.Body>
+                                <Card.Title>See result of your surveys</Card.Title>
+                            </Card.Body>
+                        </Card>
+                    </Link>
+                </Col>
+                <Col sm="2"/>
+            </Row>
+
         </Container>
     );
 }
@@ -1013,7 +1044,7 @@ function AdminButtons(props)
 export
 {
     SurveysAdmin,
-        QuestionsAdmin,
-        ViewAnswersOneSurvey,
-        AdminButtons
+    QuestionsAdmin,
+    ViewAnswersOneSurvey,
+    AdminButtons
 }

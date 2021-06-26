@@ -1,4 +1,16 @@
-import {Card, Form, ListGroup, ListGroupItem, Button, Container, Badge, Alert, Spinner} from "react-bootstrap";
+import {
+    Card,
+    Form,
+    ListGroup,
+    ListGroupItem,
+    Button,
+    Container,
+    Badge,
+    Alert,
+    Spinner,
+    Row,
+    Col
+} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
@@ -50,6 +62,9 @@ function Questions(props) {
     // Loading state
     const [loading, setLoading] = useState(true);
 
+    // Redirect to home page
+    const [redirect, setRedirect] = useState(false);
+
     // Obtain the groupId used to connect together answers to a survey session
     useEffect(() => {
         API.getGroupId()
@@ -86,6 +101,9 @@ function Questions(props) {
             setAllInputsValid(check);
     }, [validInputs, validUsername]);
 
+    if(redirect)
+        return(<Redirect to="/"/>);
+
     return (
         <Container className="justify-content-center align-items-center">
             {loading ?
@@ -114,14 +132,22 @@ function Questions(props) {
                         </>
                     )}
                     <br/>
-                    {allInputsValid ?
-                        <Button variant="dark" type="submit" onClick={() => setSubmitAnswers(true)}>Submit</Button>
-                        :
-                        <Button disabled variant="dark" type="submit">Submit</Button>
-                    }
-                    <br/>
+                    <Row>
+                        <Col sm="2"/>
+                        <Col>
+                            <Button variant="danger" type="button" onClick={() => setRedirect(true)}>Back</Button>
+                        </Col>
+                        <Col sm="2"/>
+                        <Col>
+                            {allInputsValid ?
+                                <Button variant="dark" type="button" onClick={() => setSubmitAnswers(true)}>Submit</Button>
+                                :
+                                <Button disabled variant="dark" type="submit">Submit</Button>
+                            }
+                        </Col>
+                        <Col sm="2"/>
+                    </Row>
                 </>
-
             }
         </Container>
     );
