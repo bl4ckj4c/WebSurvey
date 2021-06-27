@@ -196,48 +196,79 @@
     ```
 
 - POST `/api/sessions`
-  - description:
-  - request parameters: JSON of the user to login
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
-  - response body content: user if the login was successful, error otherwise
+  - description: request to log in an admin
+  - request parameters: *none*
+  - request body: object describing the user
     ```
+    {
+        "username": "john@polito.it",
+        "password": "1234abcd"
+    }
+    ```
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
+  - response body content: user if the login was successful, error otherwise<br/>
+    Successful login
+    ```
+    {
+        "id": 1,
+        "username": "john@polito.it",
+        "name":"John"
+    }
+    ```
+    Login error
+    ```
+    {
+        "message": "Incorrect username and/or password."
+    }
     ```
 - DELETE `/api/sessions/current`
-  - description:
-  - request parameters: JSON of the user to logout
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
-  - response body content: nothing
-    ```
-    ```
-- GET `/api/sessions/current`
-  - description:
+  - description: request to log out an admin
   - request parameters: *none*
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
-  - response body content: JSON of the current logged user, error if the user isn't logged
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)
+  - response body content: *none*
+- GET `/api/sessions/current`
+  - description: get the status about the user, if he/she is logged in or not
+  - request parameters: *none*
+  - response: `200 OK` (success) or `401 Unauthorized` (authentication error)  
+  - response body content: user if he/she is logged in, error otherwise<br/>
+    User already logged in
     ```
+    {
+    "id": 1,
+    "username": "john@polito.it",
+    "name":"John"
+    }
+    ```
+    User not logged in
+    ```
+    {
+        "error":"Unauthenticated user!"
+    }
     ```
 
 ## Database Tables
 
--  Table `admin` - contains `id` `username` `hash` `name`
--  Table `answers` - contains `id` `groupId` `surveyId` `questionId` `type` `answer` `user`
--  Table `questions` - contains `id` `surveyId` `type` `title` `answers` `min` `max` `mandatory` `position`
--  Table `surveys` - contains `id` `title` `owner`
+-  Table `admin` is used to store admin information and the password is not the actual password but its hash. It contains `id` `username` `password` `name`
+-  Table `answers` is used to store all answers given by users during filling process. It contains `id` `groupId` `surveyId` `questionId` `type` `answer` `user`
+-  Table `questions` is used to store the questions related to a survey. It contains `id` `surveyId` `type` `title` `answers` `min` `max` `mandatory` `position`
+-  Table `surveys` is used to store high level information about surveys, then the actual survey to be shown is obtained combining this table and the `questions` one. It contains `id` `title` `owner`
 
 ## Main React Components
 
 - `Surveys` (in `Survey.js`): component to generate a list of surveys (for the user side)
+- `SurveyItem` (in `Survey.js`): component to generate a single entity survey (for the user side)
 - `Questions` (in `Survey.js`): component to generate the list of questions of a survey
 - `Question` (in `Survey.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`)
 - `UserNameField` (in `Survey.js`): username component, it handles the username field before actual questions
-- `SurveysAdmin` (in `SurveyAdmin.js`): component to generate a list of surveys (for the user side)
-- `AddNewQuestionModal` (in `SurveyAdmin.js`): component to generate a modal to create a new question
+- `SurveysAdmin` (in `SurveyAdmin.js`): component to generate a list of surveys (for the admin side)
+- `SurveyAdminItem` (in `SurveyAdmin.js`): component to generate a single entity survey (for the admin side)
+- `AddNewQuestionModal` (in `SurveyAdmin.js`): component to generate a modal to create a new question (it handles both closed-answer and open-ended questions)
 - `QuestionsAdmin` (in `SurveyAdmin.js`): component to generate the list of questions of a survey not yet published (used in the survey creation process)
 - `QuestionAdmin` (in `SurveyAdmin.js`): single question component, it handles both closed-answer and open-ended questions (the type can be chosen with the props `type`); this component just shows how the question will be displayed to the users, but fields cannot be filled by the admin during the survey creation process
 - `SurveyTitleField` (in `SurveyAdmin.js`): survey title component, it handles the survey title field before actual questions
-- `ViewAnswersOneSurvey` (in `SurveyAdmin.js`): component to render answer from a single user
-- `Login` (in `Login.js`): component to get data for the login
-- `UnauthorizedUserMessage` (in `Login.js`): component to render error message if page are accessed without permissions
+- `ViewAnswersOneSurvey` (in `SurveyAdmin.js`): component to render all answers from all users (it shows one user at a time, then the admin can move between users' answers using buttons)
+- `Login` (in `Login.js`): component to get data from admin for the login
+- `UnauthorizedUserMessage` (in `Login.js`): component to render error message if a page is accessed without permissions
 
 (only _main_ components, minor ones may be skipped)
 
