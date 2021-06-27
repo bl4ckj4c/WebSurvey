@@ -3,45 +3,219 @@
 
 ## React Client Application Routes
 
-- Route `/`: Initial page for anonymous users
-- Route `/survey/:id`: page for the survey with the corresponding `id`
-- Route `/admin`: Initial page for the administrator
-  
-- Route `/something/:param`: page content and purpose, param specification
-- ...
+- Route `/`: homepage page for the website, used to show available surveys and to login if the user is an admin
+- Route `/survey/:id`: page for filling the survey with the corresponding `id`
+- Route `/admin`: Initial page for the administrator **(protected by authentication)**
+- Route `/admin/newSurvey`: page for creating a new survey **(protected by authentication)**
+- Route `/admin/viewSurveys`: page for viewing all surveys created by the admin **(protected by authentication)**
+- Route `/admin/survey/:surveyId`: page for viewing the answers given by users to the survey with the corresponding `surveyId` **(protected by authentication)**
+- Route `/login`: page used to log in
 
 ## API Server
 
 - GET `/api/surveys`
-  - request parameters: nothing
-  - response body content: JSON of all surveys available
+  - description: get all surveys that a user can fill
+  - request parameters: *none*
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)
+  - response body content: array of objects, each describing a surveys available (id and title)
+    ```
+    [{
+        "id": 1,
+        "title": "Survey1"
+    }, {
+        "id": 2,
+        "title": "Survey2"
+    },
+    ...
+    ]
+    ```
 - GET `/api/survey/:id`
-  - request parameters: id of the survey
-  - response body content: JSON of all questions of the survey
-- GET `/api/surveys/admin/:id`
-  - request parameters: id of the admin
-  - response body content: JSON of all surveys created by the admin with the id passed as parameter
-- GET `/api/survey/:surveyId/admin/:adminId`
-  - request parameters: id of the survey and id of the admin
-  - response body content: JSON of all answers of the survey with id passed as parameter owned by the admin with the id passed as parameter
+  - description: get all questions related to the survey with the corresponding `id`
+  - request parameters: `id` of the survey
+  - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
+  - response body content: array of objects, describing the questions of the survey
+    ```
+    [{
+        "id": 1,
+        "type": "open",
+        "title": "Question 1",
+        "answers": "",
+        "min": 0,
+        "max": 0,
+        "mandatory": 0,
+        "position": 0
+    },{
+        "id": 2,
+        "type": "closed",
+        "title": "Question 2",
+        "answers":"[\"MCQ1 answer\",\"MCQ2 answer\",\"MCQ3 answer\",\"MCQ4 answer\"]",
+        "min": 2,
+        "max": 2,
+        "mandatory": 1,
+        "position":1
+    },
+    ...
+    ]
+    ```
 - GET `/api/groupId`
-  - request parameters: nothing
-  - response body content: next groupId to be used for submitting answers all together
+  - description: get the new id used to group answers given by a user
+  - request parameters: *none*
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)
+  - response body content: next id to be used for grouping answers
+    ```
+    5
+    ```
 - POST `/api/submit`
-  - request parameters: single answer given by a user
-  - response body content: nothing (just the HTTP code in the header)
+  - description: submit one single answer given by the user
+  - request parameters: *none*
+  - request body: object describing the answer to a single question given by the user<br/>
+    Closed answer object:
+    ```
+    {
+        "groupId": 5,
+        "surveyId": 1,
+        "questionId": 1,
+        "type": "closed",
+        "answer": "[0]",
+        "user": "User 1",
+        "min": 0,
+        "max": 1,
+        "numAnswers": 3
+    }
+    ```
+    Open answer object:
+    ```
+    {
+        "groupId": 5,
+        "surveyId": 1,
+        "questionId": 2,
+        "type": "open",
+        "answer": "Answer to the open question",
+        "user": "User 1",
+        "mandatory": 0
+    }
+    ```
+  - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
+  - response body content: *none*
 - POST `/api/createSurvey`
-  - request parameters: JSON of all questions of the new survey
-  - response body content: nothing (just the HTTP code in the header)
+  - description: create the survey entry in the database with the corresponding questions
+  - request parameters: *none*
+  - request body: object describing the new survey (`owner` is the admin currently logged in)
+    ```
+    {
+        "title": "Survey title",
+        "questions":[{
+            "surveyId": -1,
+            "type": "open",
+            "title": "Question 1",
+            "answers": [""],
+            "min": 0,
+            "max": 1,
+            "mandatory": false,
+            "position": 0
+        },{
+            "surveyId": -1,
+            "type": "closed",
+            "title":"Question 2",
+            "answers":["MCQ1 answer","MCQ2 answer"],
+            "min": 1,
+            "max": 1,
+            "mandatory": true,
+            "position": 1
+        }
+        ...
+        ],
+        "owner": 2
+    }
+    ```
+  - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
+  - response body content: *none*
+- GET `/api/surveys/admin/:id`
+  - description: get all surveys created by the admin logged in
+  - request parameters: `id` of the admin
+  - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
+  - response body content: array of objects, each describing a surveys created by the admin logged in (id, title and number of answers)
+    ```
+    [{
+        "id": 1,
+        "title": "Survey1"
+    }, {
+        "id": 2,
+        "title": "Survey2"
+    },
+    ...
+    ]
+    ```
+- GET `/api/survey/:surveyId/admin/:adminId`
+  - description: get all questions related to the survey with the corresponding `surveyId` created by the admin with the corresponding `adminId`
+  - request parameters: `surveyId` of the survey and `adminId` of the admin
+  - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
+  - response body content: object of array of objects, each one describing the answers of the survey given by a user (each key represents a `groupId` and the value associated is the array with the answers given by the user)
+    ```
+    {
+        "4": [{
+                  "groupId": 4,
+                  "type": "open",
+                  "answer": "Answer to open question x",
+                  "user": "User 1",
+                  "position": 0,
+                  "title": "Question 1",
+                  "answers": "[\"\"]"
+              },{
+                  "groupId": 4,
+                  "type": "closed",
+                  "answer": "[0]",
+                  "user": "User 1",
+                  "position": 1,
+                  "title": "Question 2",
+                  "answers": "[\"MCQ answer 1\",\"MCQ answer 2\",\"MCQ answer 3\"]"
+              },
+              ...
+              ],
+        "5": [{
+                  "groupId": 5,
+                  "type": "open",
+                  "answer": "Answer to open question y",
+                  "user": "User 2",
+                  "position": 0,
+                  "title": "Question 1",
+                  "answers": "[\"\"]"
+              },{
+                "groupId": 5,
+                "type": "closed",
+                "answer": "[0]",
+                "user": "User 2",
+                "position": 1,
+                "title": "Question 2",
+                "answers": "[\"MCQ answer 1\",\"MCQ answer 2\",\"MCQ answer 3\"]"
+              },
+              ...
+              ],
+        ...
+    }
+    ```
+
 - POST `/api/sessions`
+  - description:
   - request parameters: JSON of the user to login
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
   - response body content: user if the login was successful, error otherwise
+    ```
+    ```
 - DELETE `/api/sessions/current`
+  - description:
   - request parameters: JSON of the user to logout
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
   - response body content: nothing
+    ```
+    ```
 - GET `/api/sessions/current`
-  - request parameters: nothing
+  - description:
+  - request parameters: *none*
+  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
   - response body content: JSON of the current logged user, error if the user isn't logged
+    ```
+    ```
 
 ## Database Tables
 

@@ -19,7 +19,7 @@ function Surveys(props) {
     return (
         <Container className="justify-content-center align-items-center">
             {props.surveys.map((survey, index) =>
-                <SurveyItem survey={survey}/>
+                <SurveyItem survey={survey} key={survey.id}/>
             )}
         </Container>
     );
@@ -30,7 +30,7 @@ function SurveyItem(props) {
     const [mouseEnter, setMouseEnter] = useState(false);
 
     return (
-        <div key={props.survey.id}>
+        <div>
             <Link to={"/survey/" + props.survey.id} style={{textDecoration: 'none'}}>
                 <Card bg="white"
                       border={mouseEnter ? "primary" : "#e5e5e5"}
