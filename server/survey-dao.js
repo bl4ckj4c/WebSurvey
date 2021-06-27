@@ -109,9 +109,13 @@ exports.addQuestionsToSurvey = (surveyId, question) => {
 
 exports.getAllSurveysByAdminId = (owner) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT S.id, S.title, COUNT (DISTINCT A.groupId) AS numAnswer " +
+        /*const sql = "SELECT S.id, S.title, COUNT (DISTINCT A.groupId) AS numAnswer " +
             "FROM surveys S, answers A " +
             "WHERE S.id = A.surveyId AND owner = ? " +
+            "GROUP BY S.id, S.title";*/
+        const sql = "SELECT S.id, S.title, COUNT (DISTINCT A.groupId) AS numAnswer " +
+            "FROM surveys S LEFT JOIN answers A ON S.id = A.surveyId " +
+            "WHERE owner = ? " +
             "GROUP BY S.id, S.title";
         db.all(sql, [owner], (err, rows) => {
             if (err) {

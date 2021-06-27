@@ -69,9 +69,6 @@ function SurveysAdmin(props) {
     // Survey of a specified admin
     const [surveysAdmin, setSurveysAdmin] = useState([]);
 
-    // Hover information for card style
-    const [mouseEnter, setMouseEnter] = useState(false);
-
     // Loading state
     const [loading, setLoading] = useState(true);
 
@@ -125,26 +122,7 @@ function SurveysAdmin(props) {
                                             </Row>
                                             <br/>
                                             {surveysAdmin.map((survey, index) =>
-                                                <div key={survey.id}>
-                                                    <Link to={"/admin/survey/" + survey.id}
-                                                          style={{textDecoration: 'none'}}>
-                                                        <Card bg="white"
-                                                              border={mouseEnter ? "primary" : "#e5e5e5"}
-                                                              text="dark"
-                                                              onMouseEnter={() => setMouseEnter(true)}
-                                                              onMouseLeave={() => setMouseEnter(false)}>
-                                                            <Card.Body>
-                                                                <Card.Title>
-                                                                    {survey.title}
-                                                                </Card.Title>
-                                                            </Card.Body>
-                                                            <Card.Footer>
-                                                                Number of answers: {survey.numAnswer}
-                                                            </Card.Footer>
-                                                        </Card>
-                                                    </Link>
-                                                    <br/>
-                                                </div>
+                                                <SurveyAdminItem survey={survey}/>
                                             )}
                                         </>
                                 )
@@ -156,6 +134,49 @@ function SurveysAdmin(props) {
         </Container>
     )
         ;
+}
+
+function SurveyAdminItem(props) {
+    // Hover information for card style
+    const [mouseEnter, setMouseEnter] = useState(false);
+
+    return (
+        <div key={props.survey.id}>
+            {props.survey.numAnswer === 0 ?
+                <Card bg="white"
+                      border="#e5e5e5"
+                      text="dark">
+                    <Card.Body>
+                        <Card.Title>
+                            {props.survey.title}
+                        </Card.Title>
+                    </Card.Body>
+                    <Card.Footer>
+                        Number of answers: {props.survey.numAnswer}
+                    </Card.Footer>
+                </Card>
+                :
+                <Link to={"/admin/survey/" + props.survey.id}
+                      style={{textDecoration: 'none'}}>
+                    <Card bg="white"
+                          border={mouseEnter ? "primary" : "#e5e5e5"}
+                          text="dark"
+                          onMouseEnter={() => setMouseEnter(true)}
+                          onMouseLeave={() => setMouseEnter(false)}>
+                        <Card.Body>
+                            <Card.Title>
+                                {props.survey.title}
+                            </Card.Title>
+                        </Card.Body>
+                        <Card.Footer>
+                            Number of answers: {props.survey.numAnswer}
+                        </Card.Footer>
+                    </Card>
+                </Link>
+            }
+            <br/>
+        </div>
+    );
 }
 
 function AddNewQuestionModal(props) {
@@ -850,19 +871,21 @@ function ViewAnswersOneSurvey(props) {
                 setLoading(false);
             })
             .catch(r => {
+                setTotalAnswers(0);
                 setAnswers([]);
+                setLoading(false);
             });
     }, []);
 
     useEffect(() => {
-        if (loading)
+        if (loading || totalAnswers === 0)
             return;
         let tmpArray = Object.create(answers[groupsId[currentAnswer]]);
         tmpArray.sort((a, b) => {
             return a.position - b.position;
         });
         setCurrentAnswersArray(tmpArray);
-    }, [currentAnswer, loading]);
+    }, [currentAnswer, loading, totalAnswers]);
 
     if (redirect)
         return (<Redirect to="/admin/viewSurveys"/>);
@@ -872,53 +895,76 @@ function ViewAnswersOneSurvey(props) {
             {loading ?
                 <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                 :
-                <>
-                    <br/>
-                    <Row>
-                        <Col sm="2">
-                            <Button variant="danger" type="button" onClick={() => setRedirect(true)}>Back</Button>
-                        </Col>
-                        <Col>
-                            <h4>{answers[groupsId[currentAnswer]][0].user}</h4>
-                        </Col>
-                        <Col sm="2"/>
-                    </Row>
-                    <br/>
-                    {currentAnswersArray.map(question =>
+                (
+                    !totalAnswers ?
+                        <Container className="justify-content-center align-items-center">
+                            <Jumbotron style={{"marginTop": "100px"}}>
+                                <h2 className="text-danger">No answers available for this survey 👻</h2>
+                                <br/>
+                                <p>
+                                    Try again later.
+                                </p>
+                                <br/>
+                                <Button variant="danger" onClick={() => setRedirect(true)}>Back</Button>
+                            </Jumbotron>
+                        </Container>
+                        :
                         <>
-                            <ViewAnswersAdmin question={question}/>
                             <br/>
+                            <Row>
+                                <Col sm="2">
+                                    <Button variant="danger" type="button"
+                                            onClick={() => setRedirect(true)}>Back</Button>
+                                </Col>
+                                <Col>
+                                    <h4>{answers[groupsId[currentAnswer]][0].user}</h4>
+                                </Col>
+                                <Col sm="2"/>
+                            </Row>
+                            <br/>
+                            {currentAnswersArray.map(question =>
+                                <>
+                                    <ViewAnswersAdmin question={question}/>
+                                    <br/>
+                                </>
+                            )}
                         </>
-                    )}
-                </>}
+                )
+            }
             <br/>
-            <ButtonGroup aria-label="Pagination">
-                <Button variant="primary" onClick={() => setCurrentAnswer(0)}>First</Button>
-                {
-                    currentAnswer === 0 ?
-                        <Button variant="primary" disabled>Previous</Button>
-                        :
-                        <Button variant="primary" onClick={() => {
-                            if (currentAnswer > 0)
-                                setCurrentAnswer(old => old - 1);
-                        }}>Previous</Button>
-                }
-            </ButtonGroup>
-            {' '}
-            <Button variant="light" disabled>{currentAnswer + 1} out of {totalAnswers}</Button>
-            {' '}
-            <ButtonGroup aria-label="Pagination">
-                {
-                    currentAnswer === (totalAnswers - 1) ?
-                        <Button variant="primary" disabled>Next</Button>
-                        :
-                        <Button variant="primary" onClick={() => {
-                            if (currentAnswer < (totalAnswers - 1))
-                                setCurrentAnswer(old => old + 1);
-                        }}>Next</Button>
-                }
-                <Button variant="primary" onClick={() => setCurrentAnswer(() => totalAnswers - 1)}>Last</Button>
-            </ButtonGroup>
+            {totalAnswers !== 0 ?
+                <>
+                    <ButtonGroup aria-label="Pagination">
+                        <Button variant="primary" onClick={() => setCurrentAnswer(0)}>First</Button>
+                        {
+                            currentAnswer === 0 ?
+                                <Button variant="primary" disabled>Previous</Button>
+                                :
+                                <Button variant="primary" onClick={() => {
+                                    if (currentAnswer > 0)
+                                        setCurrentAnswer(old => old - 1);
+                                }}>Previous</Button>
+                        }
+                    </ButtonGroup>
+                    {' '}
+                    <Button variant="light" disabled>{currentAnswer + 1} out of {totalAnswers}</Button>
+                    {' '}
+                    <ButtonGroup aria-label="Pagination">
+                        {
+                            currentAnswer === (totalAnswers - 1) ?
+                                <Button variant="primary" disabled>Next</Button>
+                                :
+                                <Button variant="primary" onClick={() => {
+                                    if (currentAnswer < (totalAnswers - 1))
+                                        setCurrentAnswer(old => old + 1);
+                                }}>Next</Button>
+                        }
+                        <Button variant="primary" onClick={() => setCurrentAnswer(() => totalAnswers - 1)}>Last</Button>
+                    </ButtonGroup>
+                </>
+                :
+                <></>
+            }
         </Container>
     );
 }
