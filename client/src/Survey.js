@@ -219,7 +219,10 @@ function Question(props) {
                 questionId: props.question.id,
                 type: 'closed',
                 answer: JSON.stringify(tmpAnswers),
-                user: props.username
+                user: props.username,
+                min : props.question.min,
+                max : props.question.max,
+                numAnswers : props.question.answers.length
             })
                 .then(() => setRedirect(true))
                 .catch(() => setRedirect(true));
@@ -232,7 +235,8 @@ function Question(props) {
                 questionId: props.question.id,
                 type: 'open',
                 answer: openAnswer,
-                user: props.username
+                user: props.username,
+                mandatory: props.question.mandatory
             })
                 .then(() => setRedirect(true))
                 .catch(() => setRedirect(true));

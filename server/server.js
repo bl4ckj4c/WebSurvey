@@ -115,11 +115,119 @@ app.get('/api/groupId', (req, res) => {
         .catch(() => res.status(500).end());
 })
 
-app.post('/api/submit', (req, res) => {
-    surveyDao.submitAnswer(req.body.groupId, req.body.surveyId, req.body.questionId, req.body.type, req.body.answer, req.body.user)
-        .then(() => res.status(201).end())
-        .catch(() => res.status(500).end());
-})
+app.post('/api/submit',
+    body('groupId')
+        // Check if the groupId parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the groupId parameter is not empty
+        .notEmpty()
+        .bail()
+        // Check if the groupId parameter is a number
+        .custom((value, req) => {
+            let regex = new RegExp(/^0|([1-9]([0-9]*)?)$/);
+            return regex.test(value);
+        }),
+    body('surveyId')
+        // Check if the surveyId parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the surveyId parameter is not empty
+        .notEmpty()
+        .bail()
+        // Check if the surveyId parameter is a number
+        .custom((value, req) => {
+            let regex = new RegExp(/^[1-9]([0-9]*)?$/);
+            return regex.test(value);
+        }),
+    body('questionId')
+        // Check if the questionId parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the questionId parameter is not empty
+        .notEmpty()
+        .bail()
+        // Check if the questionId parameter is a number
+        .custom((value, req) => {
+            let regex = new RegExp(/^[1-9]([0-9]*)?$/);
+            return regex.test(value);
+        }),
+    body('type')
+        // Check if the type parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the type parameter is not empty
+        .notEmpty()
+        .bail()
+        // Check if the type parameter is a number
+        .custom((value, req) => {
+            let regex = new RegExp(/^(open|closed)$/);
+            return regex.test(value);
+        }),
+    body('user')
+        // Check if the user parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the user parameter is not empty
+        .notEmpty(),
+    (req, res) => {
+        const result = validationResult(req);
+        // Validation error
+        if (!result.isEmpty()) {
+            let jsonArray = [];
+            for (let item of result.array())
+                jsonArray.push({
+                    param: item.param,
+                    error: item.msg,
+                    valueReceived: item.value
+                })
+            res.status(400).json({
+                info: "The server cannot process the request",
+                errors: jsonArray
+            });
+        }
+        // Check min/max constraints for closed question or mandatory for open question
+        else {
+            let check = true;
+            let fields = req.body;
+            let regex;
+
+            // Closed answer
+            if (fields.type === 'closed') {
+                regex = new RegExp(/^[1-9]([0-9]*)?$/);
+                check = check && regex.test(fields.min);
+                check = check && regex.test(fields.max);
+                check = check && regex.test(fields.numAnswers);
+
+                if (check) {
+                    let min = parseInt(fields.min);
+                    let max = parseInt(fields.max);
+                    let numAnswers = parseInt(fields.numAnswers);
+                    if (min < 0 ||
+                        max < 0 ||
+                        min > numAnswers ||
+                        max > numAnswers ||
+                        min > max)
+                        check = false;
+                }
+            }
+            // Open answer
+            else if (fields.type === 'closed') {
+                regex = new RegExp(/^[0-1]$/);
+                check = check && regex.test(fields.mandatory);
+                if (check) {
+                    let mandatory = parseInt(fields.mandatory);
+                }
+            }
+
+            if (check)
+                surveyDao.submitAnswer(fields.groupId, fields.surveyId, fields.questionId, fields.type, fields.answer, fields.user)
+                    .then(() => res.status(201).end())
+                    .catch(() => res.status(500).end());
+            else
+                res.status(400).end();
+        }
+    })
 
 app.post('/api/createSurvey',
     isLoggedIn,
@@ -207,8 +315,7 @@ app.get('/api/survey/:surveyId/admin/:adminId',
                 info: "The server cannot process the request",
                 errors: jsonArray
             });
-        }
-        else
+        } else
             surveyDao.getAllAnswersFromSurveyId(req.params.surveyId, req.params.adminId)
                 .then(surveys => res.json(surveys))
                 .catch(() => res.status(500).end());
