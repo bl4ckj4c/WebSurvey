@@ -18,31 +18,34 @@ import API from "./API";
 function Surveys(props) {
     return (
         <Container className="justify-content-center align-items-center">
-            {props.surveys.map((survey, index) => {
-                    // Hover information for card style
-                    const [mouseEnter, setMouseEnter] = useState(false);
-
-                    return (
-                        <div key={survey.id}>
-                            <Link to={"/survey/" + survey.id} style={{textDecoration: 'none'}}>
-                                <Card bg="white"
-                                      border={mouseEnter ? "primary" : "#e5e5e5"}
-                                      text="dark"
-                                      onMouseEnter={() => setMouseEnter(true)}
-                                      onMouseLeave={() => setMouseEnter(false)}>
-                                    <Card.Body>
-                                        <Card.Title>
-                                            {survey.title}
-                                        </Card.Title>
-                                    </Card.Body>
-                                </Card>
-                            </Link>
-                            <br/>
-                        </div>
-                    );
-                }
+            {props.surveys.map((survey, index) =>
+                <SurveyItem survey={survey}/>
             )}
         </Container>
+    );
+}
+
+function SurveyItem(props) {
+    // Hover information for card style
+    const [mouseEnter, setMouseEnter] = useState(false);
+
+    return (
+        <div key={props.survey.id}>
+            <Link to={"/survey/" + props.survey.id} style={{textDecoration: 'none'}}>
+                <Card bg="white"
+                      border={mouseEnter ? "primary" : "#e5e5e5"}
+                      text="dark"
+                      onMouseEnter={() => setMouseEnter(true)}
+                      onMouseLeave={() => setMouseEnter(false)}>
+                    <Card.Body>
+                        <Card.Title>
+                            {props.survey.title}
+                        </Card.Title>
+                    </Card.Body>
+                </Card>
+            </Link>
+            <br/>
+        </div>
     );
 }
 
@@ -101,8 +104,8 @@ function Questions(props) {
             setAllInputsValid(check);
     }, [validInputs, validUsername]);
 
-    if(redirect)
-        return(<Redirect to="/"/>);
+    if (redirect)
+        return (<Redirect to="/"/>);
 
     return (
         <Container className="justify-content-center align-items-center">
@@ -140,7 +143,8 @@ function Questions(props) {
                         <Col sm="2"/>
                         <Col>
                             {allInputsValid ?
-                                <Button variant="dark" type="button" onClick={() => setSubmitAnswers(true)}>Submit</Button>
+                                <Button variant="dark" type="button"
+                                        onClick={() => setSubmitAnswers(true)}>Submit</Button>
                                 :
                                 <Button disabled variant="dark" type="submit">Submit</Button>
                             }
@@ -220,9 +224,9 @@ function Question(props) {
                 type: 'closed',
                 answer: JSON.stringify(tmpAnswers),
                 user: props.username,
-                min : props.question.min,
-                max : props.question.max,
-                numAnswers : JSON.parse(props.question.answers).length
+                min: props.question.min,
+                max: props.question.max,
+                numAnswers: JSON.parse(props.question.answers).length
             })
                 .then(() => setRedirect(true))
                 .catch(() => setRedirect(true));
