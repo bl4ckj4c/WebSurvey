@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const {body, param, validationResult, sanitizeBody, sanitizeParam} = require('express-validator');
 const morgan = require('morgan'); // logging middleware
 const session = require('express-session'); // session middleware
 const passport = require('passport'); // auth middleware
@@ -80,8 +81,30 @@ app.get('/api/surveys', (req, res) => {
         .catch(() => res.status(500).end());
 })
 
-app.get('/api/survey/:id', (req, res) => {
-    surveyDao.getAllQuestionsFromSurveyId(req.params.id)
+app.get('/api/survey/:id',
+    param('id')
+        // Check if the id parameters is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the id parameters is not empty
+        .notEmpty()
+        .bail()
+        // Check if the id parameters is a number
+        .custom((value, req) => {
+            let regex = new RegExp(/^[1-9]([0-9]*)?$/);
+            return regex.test(value);
+        }),
+    (req, res) => {
+    const result = validationResult(req);
+    // Validation error
+    if(!result.isEmpty())
+        res.status(400).json({
+            info: "The server cannot process the request",
+            error: result.array()[0].msg,
+            valueReceived: result.array()[0].value
+        });
+    else
+        surveyDao.getAllQuestionsFromSurveyId(req.params.id)
         .then(questions => res.json(questions))
         .catch(() => res.status(500).end());
 })
