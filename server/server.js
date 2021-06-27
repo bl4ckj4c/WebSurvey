@@ -194,7 +194,7 @@ app.post('/api/submit',
 
             // Closed answer
             if (fields.type === 'closed') {
-                regex = new RegExp(/^[1-9]([0-9]*)?$/);
+                regex = new RegExp(/^0|([1-9]([0-9]*)?)$/);
                 check = check && regex.test(fields.min);
                 check = check && regex.test(fields.max);
                 check = check && regex.test(fields.numAnswers);
@@ -203,21 +203,73 @@ app.post('/api/submit',
                     let min = parseInt(fields.min);
                     let max = parseInt(fields.max);
                     let numAnswers = parseInt(fields.numAnswers);
+
+                    // Check constraints on min, max and numAnswers values
                     if (min < 0 ||
                         max < 0 ||
                         min > numAnswers ||
                         max > numAnswers ||
                         min > max)
                         check = false;
+
+                    // Check if the answer is null
+                    // It should be an empty array if the question is not mandatory
+                    // or a valid array if the question is mandatory
+                    if (fields.answer === null)
+                        check = false;
+
+                    // Additional checks if the question is mandatory
+                    if (min > 0) {
+                        // Mandatory question should not have an empty answer
+                        if (fields.answer === '')
+                            check = false;
+                        // Try to parse the answer and get the length,
+                        // then compare it with the expected number of answers
+                        try {
+                            let length = JSON.parse(fields.answer).length;
+                            if (length !== min)
+                                check = false;
+                        } catch (error) {
+                            check = false;
+                        }
+                    }
                 }
+
+                // If check becomes false, then return error
+                if (!check)
+                    res.status(400).json({
+                        info: "The server cannot process the request",
+                        type: "Closed question",
+                        error: "Min, max, numAnswers or the answers are not valid due to the constraints between them"
+                    });
             }
+
             // Open answer
-            else if (fields.type === 'closed') {
+            else if (fields.type === 'open') {
                 regex = new RegExp(/^[0-1]$/);
                 check = check && regex.test(fields.mandatory);
+
                 if (check) {
+                    // Check if the answer is null
+                    // It should be an empty string if the question is not mandatory
+                    // or a valid string if the question is mandatory
+                    if (fields.answer === null)
+                        check = false;
+
+                    // Additional checks if the question is mandatory
                     let mandatory = parseInt(fields.mandatory);
+                    // Mandatory question should not have an empty answer
+                    if (mandatory > 0 && fields.answer === '')
+                        check = false;
                 }
+
+                // If check becomes false, then return error
+                if (!check)
+                    res.status(400).json({
+                        info: "The server cannot process the request",
+                        type: "Open question",
+                        error: "The answer is empty but the question is marked as mandatory"
+                    });
             }
 
             if (check)
@@ -231,18 +283,130 @@ app.post('/api/submit',
 
 app.post('/api/createSurvey',
     isLoggedIn,
+    body('owner')
+        // Check if the owner parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the owner parameter is not empty
+        .notEmpty()
+        .bail()
+        // Check if the owner parameter is a number
+        .custom((value, req) => {
+            let regex = new RegExp(/^[1-9]([0-9]*)?$/);
+            return regex.test(value);
+        }),
+    body('title')
+        // Check if the title parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the title parameter is not empty
+        .notEmpty(),
+    body('questions')
+        // Check if the questions parameter is not null
+        .exists({checkNull: true})
+        .bail()
+        // Check if the questions parameter is an array
+        .isArray()
+        .bail()
+        // Check if the questions parameter is not empty
+        .custom((value, req) => {
+            return value.length !== 0;
+        }),
     async (req, res) => {
-        let responseCode = 201;
+        const result = validationResult(req);
+        // Validation error
+        if (!result.isEmpty()) {
+            let jsonArray = [];
+            for (let item of result.array())
+                jsonArray.push({
+                    param: item.param,
+                    error: item.msg,
+                    valueReceived: item.value
+                })
+            res.status(400).json({
+                info: "The server cannot process the request",
+                errors: jsonArray
+            });
+        } else {
+            let responseCode = 201;
+            let check = true;
 
-        let title = req.body.title;
-        let questions = req.body.questions;
-        let owner = req.body.owner;
-        // Create the new survey and get the auto-generated id back
-        let surveyId = await surveyDao.createSurvey(title, questions, owner);
-        // Add one question at a time into the database for the corresponding survey
-        questions.forEach(question => surveyDao.addQuestionsToSurvey(surveyId, question).catch(() => responseCode = 500));
+            let title = req.body.title;
+            let questions = req.body.questions;
+            let owner = req.body.owner;
 
-        res.status(responseCode).end();
+            let regex;
+            let min;
+            let max;
+            let numAnswers;
+            let position;
+
+            // Check every item of the questions array
+            for (let item of questions) {
+                // The object if empty, so it's an error
+                if (Object.keys(item).length === 0 && item.constructor === Object) {
+                    check = false;
+                    break;
+                }
+                if (check) {
+                    // Check that all fields are present
+                    if (!item.hasOwnProperty("surveyId") ||
+                        !item.hasOwnProperty("type") ||
+                        !item.hasOwnProperty("title") ||
+                        !item.hasOwnProperty("answers") ||
+                        !item.hasOwnProperty("min") ||
+                        !item.hasOwnProperty("max") ||
+                        !item.hasOwnProperty("mandatory") ||
+                        !item.hasOwnProperty("position")) {
+                        check = false;
+                        break;
+                    }
+
+                    // Check type value
+                    regex = new RegExp(/^(open|closed)$/);
+                    check = check && regex.test(item.type);
+
+                    // Check position value
+                    regex = new RegExp(/^0|([1-9]([0-9]*)?)$/);
+                    check = check && regex.test(item.position);
+                    position = parseInt(item.position);
+                    if (position < 0) {
+                        check = false;
+                        break;
+                    }
+
+                    // Close question checks
+                    if (item.type === 'closed') {
+                        // Check min and max values
+                        regex = new RegExp(/^0|([1-9]([0-9]*)?)$/);
+                        check = check && regex.test(item.min);
+                        check = check && regex.test(item.max);
+
+                        // Check constraints between min, max, mandatory
+                        min = parseInt(item.min);
+                        max = parseInt(item.max);
+                        numAnswers = item.answers.length;
+                        if (min < 0 ||
+                            max < 0 ||
+                            min > numAnswers ||
+                            max > numAnswers ||
+                            min > max) {
+                            check = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (check) {
+                // Create the new survey and get the auto-generated id back
+                let surveyId = await surveyDao.createSurvey(title, questions, owner);
+                // Add one question at a time into the database for the corresponding survey
+                questions.forEach(question => surveyDao.addQuestionsToSurvey(surveyId, question).catch(() => responseCode = 500));
+                res.status(responseCode).end();
+            } else
+                res.status(400).end();
+        }
     })
 
 app.get('/api/surveys/admin/:id',

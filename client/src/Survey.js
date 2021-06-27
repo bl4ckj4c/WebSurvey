@@ -222,7 +222,7 @@ function Question(props) {
                 user: props.username,
                 min : props.question.min,
                 max : props.question.max,
-                numAnswers : props.question.answers.length
+                numAnswers : JSON.parse(props.question.answers).length
             })
                 .then(() => setRedirect(true))
                 .catch(() => setRedirect(true));
