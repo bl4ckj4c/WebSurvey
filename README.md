@@ -34,7 +34,7 @@
   - **request parameters**: `id` of the survey
   - **response**: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
   - **response body content**: array of objects, describing the questions of the survey; error object in case of wrong parameter<br/>
-    Successful response
+    Successful response:
     ```
     [{
         "id": 1,
