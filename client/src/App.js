@@ -112,14 +112,7 @@ function App() {
                             <>
                                 <MyNavBar loggedIn={loggedIn} loggedAdmin={loggedAdmin} logout={doLogOut}/>
                                 {loading ?
-                                    <>
-                                        <br/>
-                                        <br/>
-                                        <Spinner animation="border" variant="primary"/>
-                                        <br/>
-                                        <br/>
-                                        <br/>
-                                    </>
+                                    <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                                     :
                                     <>
                                         <br/>

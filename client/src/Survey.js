@@ -108,7 +108,7 @@ function Questions(props) {
         return (<Redirect to="/"/>);
 
     return (
-        <Container className="justify-content-center align-items-center">
+        <Container className="justify-content-center align-items-center" style={{"marginBottom": "50px"}}>
             {loading ?
                 <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                 :

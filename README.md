@@ -33,7 +33,8 @@
   - description: get all questions related to the survey with the corresponding `id`
   - request parameters: `id` of the survey
   - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
-  - response body content: array of objects, describing the questions of the survey
+  - response body content: array of objects, describing the questions of the survey; error object in case of wrong parameter<br/>
+    Successful response
     ```
     [{
         "id": 1,
@@ -56,6 +57,14 @@
     },
     ...
     ]
+    ```
+    Error response:
+    ```
+    {
+        "info": "The server cannot process the request",
+        "error": "Invalid value",
+        "valueReceived": "WrongParameterPassedAsId"
+    }
     ```
 - GET `/api/groupId`
   - description: get the new id used to group answers given by a user
@@ -96,7 +105,31 @@
     }
     ```
   - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
-  - response body content: *none*
+  - response body content: *none* in case of success, error object in case of error<br/>
+    ```
+    {
+        "info": "The server cannot process the request",
+        "errors": [
+            {
+                "param": "groupId",
+                "error": "Invalid value"
+            },
+            {
+                "param": "type",
+                "error": "Invalid value"
+            },
+            ...
+        ]
+    }
+    ```
+    Error in min, max and number of questions constraints for closed questions:
+    ```
+    {
+        "info": "The server cannot process the request",
+        "type": "Closed question",
+        "error": "Min, max, numAnswers or the answers are not valid due to the constraints between them"
+    }
+    ```
 - POST `/api/createSurvey`
   - description: create the survey entry in the database with the corresponding questions
   - request parameters: *none*
@@ -129,28 +162,55 @@
     }
     ```
   - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
-  - response body content: *none*
+  - response body content: *none* in case of success, error object in case of error (in `title` or `owner`) or *none* in case of error in at least one of the questions passed in the request object
+    ```
+    {
+        "info": "The server cannot process the request",
+        "errors": [
+            {
+                "param": "owner",
+                "error": "Invalid value"
+            },
+            {
+                "param": "title",
+                "error": "Invalid value"
+            }
+        ]
+    }
+    ```
 - GET `/api/surveys/admin/:id`
   - description: get all surveys created by the admin logged in
   - request parameters: `id` of the admin
   - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
-  - response body content: array of objects, each describing a surveys created by the admin logged in (id, title and number of answers)
+  - response body content: array of objects, each describing a surveys created by the admin logged in (id, title and number of answers); error object in case of error<br/>
+    Successful response:
     ```
     [{
         "id": 1,
-        "title": "Survey1"
+        "title": "Survey1",
+        "numAnswer": 3
     }, {
         "id": 2,
-        "title": "Survey2"
+        "title": "Survey2",
+        "numAnswer": 2
     },
     ...
     ]
+    ```
+    Error response:
+    ```
+    {
+        "info": "The server cannot process the request",
+        "error": "Invalid value",
+        "valueReceived": "WrongParameterPassedAsId"
+    }
     ```
 - GET `/api/survey/:surveyId/admin/:adminId`
   - description: get all questions related to the survey with the corresponding `surveyId` created by the admin with the corresponding `adminId`
   - request parameters: `surveyId` of the survey and `adminId` of the admin
   - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
-  - response body content: object of array of objects, each one describing the answers of the survey given by a user (each key represents a `groupId` and the value associated is the array with the answers given by the user)
+  - response body content: object of array of objects, each one describing the answers of the survey given by a user (each key represents a `groupId` and the value associated is the array with the answers given by the user); error object in case of error<br/>
+    Successful response:
     ```
     {
         "4": [{
@@ -194,6 +254,24 @@
         ...
     }
     ```
+    Error response:
+    ```
+    {
+        "info": "The server cannot process the request",
+        "errors": [
+            {
+                "param": "surveyId",
+                "error": "Invalid value",
+                "valueReceived": "WrongParameterPassedAsId"
+            },
+            {
+                "param": "adminId",
+                "error": "Invalid value",
+                "valueReceived": "WrongParameterPassedAsId"
+            }
+        ]
+    }
+    ```
 
 - POST `/api/sessions`
   - description: request to log in an admin
@@ -207,7 +285,7 @@
     ```
   - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
   - response body content: user if the login was successful, error otherwise<br/>
-    Successful login
+    Successful login:
     ```
     {
         "id": 1,
@@ -215,7 +293,7 @@
         "name":"John"
     }
     ```
-    Login error
+    Login error:
     ```
     {
         "message": "Incorrect username and/or password."
@@ -231,7 +309,7 @@
   - request parameters: *none*
   - response: `200 OK` (success) or `401 Unauthorized` (authentication error)  
   - response body content: user if he/she is logged in, error otherwise<br/>
-    User already logged in
+    User already logged in:
     ```
     {
     "id": 1,
@@ -239,7 +317,7 @@
     "name":"John"
     }
     ```
-    User not logged in
+    User not logged in:
     ```
     {
         "error":"Unauthenticated user!"
@@ -287,9 +365,3 @@
   - Created surveys:
     - *Holiday survey*
     - *Exam test*
-  
-
-
-
-- username, password (plus any other requested info)
-- username, password (plus any other requested info)

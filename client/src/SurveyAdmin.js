@@ -62,7 +62,8 @@ function swapQuestions(pos, dir, questions, setQuestions) {
 async function deleteQuestion(pos, setQuestions, questions, setNumAnswers) {
     setQuestions(oldList => oldList.filter(q => q.position !== pos));
     setQuestions(oldList => oldList.map((q, index) => {
-        let tmp = Object.create(q);
+        // Copy all attributes of the old object and then modify its position
+        let tmp = JSON.parse(JSON.stringify(q));
         tmp.position = index;
         return tmp;
     }));
@@ -559,7 +560,7 @@ function QuestionsAdmin(props) {
     }
 
     return (
-        <Container className="justify-content-center align-items-center">
+        <Container className="justify-content-center align-items-center" style={{"marginBottom": "50px"}}>
             <SurveyTitleField surveyTitle={surveyTitle}
                               setSurveyTitle={setSurveyTitle}
                               validSurveyTitle={validSurveyTitle}
@@ -893,7 +894,7 @@ function ViewAnswersOneSurvey(props) {
         return (<Redirect to="/admin/viewSurveys"/>);
 
     return (
-        <Container className="justify-content-center align-items-center">
+        <Container className="justify-content-center align-items-center" style={{"marginBottom": "50px"}}>
             {loading ?
                 <Spinner animation="border" variant="primary" style={{"marginTop": "100px"}}/>
                 :
