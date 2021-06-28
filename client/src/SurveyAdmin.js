@@ -987,7 +987,7 @@ function ViewAnswersAdmin(props) {
                     <ListGroup className="list-group">
                         {answers.map((answer, index) => {
                             let checked = false;
-                            if (answerIndex.find(item => item === (index + 1)))
+                            if (answerIndex.find(item => item === index) !== undefined)
                                 checked = true;
                             return (
                                 <ListGroupItem key={index} className={checked ? "bg-success" : "bg-white"}>

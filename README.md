@@ -279,7 +279,14 @@
 ## Users Credentials
 
 - `john@polito.it`, `1234abcd`
+  - Created surveys:
+    - *Restaurant review*
+    - *Music survey*
+    - *Running survey*
 - `emily@polito.it`, `5678efgh`
+  - Created surveys:
+    - *Holiday survey*
+    - *Exam test*
   
 
 

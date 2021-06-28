@@ -227,7 +227,7 @@ app.post('/api/submit',
                         // then compare it with the expected number of answers
                         try {
                             let length = JSON.parse(fields.answer).length;
-                            if (length !== min)
+                            if (length < min)
                                 check = false;
                         } catch (error) {
                             check = false;
