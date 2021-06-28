@@ -122,7 +122,7 @@ function SurveysAdmin(props) {
                                             </Row>
                                             <br/>
                                             {surveysAdmin.map((survey, index) =>
-                                                <SurveyAdminItem survey={survey}/>
+                                                <SurveyAdminItem survey={survey} key={index}/>
                                             )}
                                         </>
                                 )
@@ -272,7 +272,6 @@ function AddNewQuestionModal(props) {
     }, [numAnswers]);
 
     useEffect(() => {
-        console.log(validInputs);
         let check = true;
         if (validTitle === 'init' || validTitle === 'invalid')
             check = false;
@@ -426,7 +425,7 @@ function AddNewQuestionModal(props) {
                             </Form.Row>
                             <Container className="justify-content-center align-items-center">
                                 {answers.map((a, index) =>
-                                    <InputGroup className="mb-2 mr-sm-2">
+                                    <InputGroup className="mb-2 mr-sm-2" key={index}>
                                         <InputGroup.Prepend>
                                             <InputGroup.Text><Form.Check type="checkbox"/></InputGroup.Text>
                                         </InputGroup.Prepend>
@@ -565,15 +564,14 @@ function QuestionsAdmin(props) {
 
             {
                 props.questions.map((question, index) =>
-                    <>
-                        <QuestionAdmin key={question.id}
-                                       question={question}
+                    <div key={question.id}>
+                        <QuestionAdmin question={question}
                                        questions={props.questions}
                                        setQuestions={props.setQuestions}
                                        setNumAnswers={setNumAnswers}
                         />
                         <br/>
-                    </>
+                    </div>
                 )
             }
             <br/>

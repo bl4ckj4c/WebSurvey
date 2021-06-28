@@ -117,9 +117,8 @@ function Questions(props) {
                     <UserNameField setValidUsername={setValidUsername} username={username} setUsername={setUsername}/>
                     <br/>
                     {props.questions.map((question, index) =>
-                        <>
-                            <Question key={question.id}
-                                      index={index}
+                        <div key={question.id}>
+                            <Question index={index}
                                       validityStates={validInputs}
                                       setValidityStates={setValidInputs}
                                       question={question}
@@ -132,7 +131,7 @@ function Questions(props) {
                                       groupId={groupId}
                             />
                             <br/>
-                        </>
+                        </div>
                     )}
                     <br/>
                     <Row>
