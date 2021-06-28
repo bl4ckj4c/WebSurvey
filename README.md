@@ -348,8 +348,6 @@
 - `Login` (in `Login.js`): component to get data from admin for the login
 - `UnauthorizedUserMessage` (in `Login.js`): component to render error message if a page is accessed without permissions
 
-(only _main_ components, minor ones may be skipped)
-
 ## Screenshot
 
 ![Screenshot](./img/screenshot.PNG)
