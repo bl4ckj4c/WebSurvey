@@ -287,9 +287,3 @@
   - Created surveys:
     - *Holiday survey*
     - *Exam test*
-  
-
-
-
-- username, password (plus any other requested info)
-- username, password (plus any other requested info)
