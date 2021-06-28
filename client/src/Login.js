@@ -1,4 +1,4 @@
-import {Button, Container, Form, Row, Col, Alert, Image, Jumbotron} from "react-bootstrap";
+import {Button, Container, Form, Row, Col, Alert, Jumbotron} from "react-bootstrap";
 import {Redirect} from "react-router-dom";
 import {useEffect, useState} from "react";
 

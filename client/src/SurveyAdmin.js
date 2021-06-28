@@ -9,12 +9,16 @@ import {
     Badge,
     Col,
     InputGroup,
-    FormControl, Row, Spinner, Pagination, ButtonGroup, Jumbotron, CloseButton
+    FormControl,
+    Row,
+    Spinner,
+    ButtonGroup,
+    Jumbotron,
+    CloseButton
 } from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {Link, Redirect} from "react-router-dom";
 import API from "./API";
-import {Surveys} from "./Survey";
 
 function swapQuestions(pos, dir, questions, setQuestions) {
     let currItem = questions[pos];
@@ -80,7 +84,7 @@ function SurveysAdmin(props) {
                 setSurveysAdmin(r);
                 setLoading(false);
             })
-            .catch(r => {
+            .catch(() => {
                 setSurveysAdmin([]);
             });
     }, []);
@@ -536,7 +540,7 @@ function QuestionsAdmin(props) {
     // Redirect
     const [redirect, setRedirect] = useState(false);
     // Create the new survey
-    const handlerSubmitSurvey = (event) => {
+    const handlerSubmitSurvey = () => {
         API.createSurvey(surveyTitle, props.questions, props.owner)
             .then(() => setRedirect(true))
             .catch(() => setRedirect(true));
@@ -564,7 +568,7 @@ function QuestionsAdmin(props) {
 
             {
                 props.questions.map((question, index) =>
-                    <div key={question.id}>
+                    <div key={index}>
                         <QuestionAdmin question={question}
                                        questions={props.questions}
                                        setQuestions={props.setQuestions}
@@ -868,7 +872,7 @@ function ViewAnswersOneSurvey(props) {
                 setCurrentAnswer(0);
                 setLoading(false);
             })
-            .catch(r => {
+            .catch(() => {
                 setTotalAnswers(0);
                 setAnswers([]);
                 setLoading(false);
@@ -920,11 +924,11 @@ function ViewAnswersOneSurvey(props) {
                                 <Col sm="2"/>
                             </Row>
                             <br/>
-                            {currentAnswersArray.map(question =>
-                                <>
+                            {currentAnswersArray.map((question, index) =>
+                                <div key={index}>
                                     <ViewAnswersAdmin question={question}/>
                                     <br/>
-                                </>
+                                </div>
                             )}
                         </>
                 )

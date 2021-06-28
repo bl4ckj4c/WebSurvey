@@ -1,9 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from './logo.svg';
 import './App.css';
-import {BrowserRouter as Router, Link, Redirect, Route, Switch} from 'react-router-dom';
+import {BrowserRouter as Router, Redirect, Route, Switch} from 'react-router-dom';
 import {useEffect, useState} from "react";
-import {Card, Container, Row, Spinner} from "react-bootstrap";
+import {Card, Spinner} from "react-bootstrap";
 import {Login, UnauthorizedUserMessage} from "./Login";
 import {Surveys, Questions} from "./Survey";
 import {SurveysAdmin, QuestionsAdmin, ViewAnswersOneSurvey, AdminButtons} from "./SurveyAdmin";
@@ -80,7 +80,7 @@ function App() {
                 setSurveys(r);
                 setLoading(false);
             })
-            .catch(r => {
+            .catch(() => {
                 setSurveys([]);
                 setLoading(false);
             });
@@ -96,7 +96,7 @@ function App() {
                     });
                     setQuestions(sortedQ);
                 })
-                .catch(r => {
+                .catch(() => {
                     setQuestions([]);
                 });
     }, [currSurvey]);
@@ -255,7 +255,7 @@ function App() {
                         }
                     }}/>
 
-                    <Route exact path="/login" render={({match}) =>
+                    <Route exact path="/login" render={() =>
                         <Login login={doLogIn} loggedIn={loggedIn} error={errorLogin} setError={setErrorLogin}/>
                     }/>
                 </Switch>
