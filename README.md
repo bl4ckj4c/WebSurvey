@@ -30,7 +30,7 @@
     ]
     ```
 - GET `/api/survey/:id`
-  - description: get all questions related to the survey with the corresponding `id`
+  - **description**: get all questions related to the survey with the corresponding `id`
   - request parameters: `id` of the survey
   - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
   - response body content: array of objects, describing the questions of the survey; error object in case of wrong parameter<br/>
@@ -312,9 +312,9 @@
     User already logged in:
     ```
     {
-    "id": 1,
-    "username": "john@polito.it",
-    "name":"John"
+        "id": 1,
+        "username": "john@polito.it",
+        "name":"John"
     }
     ```
     User not logged in:
