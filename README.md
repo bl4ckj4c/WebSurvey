@@ -13,7 +13,7 @@
 
 ## API Server
 
-- **GET** `/api/surveys`
+- GET `/api/surveys`
   - **description**: get all surveys that a user can fill
   - **request parameters**: *none*
   - **response**: `200 OK` (success) or `500 Internal Server Error` (generic error)
@@ -31,9 +31,9 @@
     ```
 - GET `/api/survey/:id`
   - **description**: get all questions related to the survey with the corresponding `id`
-  - request parameters: `id` of the survey
-  - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
-  - response body content: array of objects, describing the questions of the survey; error object in case of wrong parameter<br/>
+  - **request parameters**: `id` of the survey
+  - **response**: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
+  - **response body content**: array of objects, describing the questions of the survey; error object in case of wrong parameter<br/>
     Successful response
     ```
     [{
@@ -67,17 +67,17 @@
     }
     ```
 - GET `/api/groupId`
-  - description: get the new id used to group answers given by a user
-  - request parameters: *none*
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)
-  - response body content: next id to be used for grouping answers
+  - **description**: get the new id used to group answers given by a user
+  - **request parameters**: *none*
+  - **response**: `200 OK` (success) or `500 Internal Server Error` (generic error)
+  - **response body content**: next id to be used for grouping answers
     ```
     5
     ```
 - POST `/api/submit`
-  - description: submit one single answer given by the user
-  - request parameters: *none*
-  - request body: object describing the answer to a single question given by the user<br/>
+  - **description**: submit one single answer given by the user
+  - **request parameters**: *none*
+  - **request body**: object describing the answer to a single question given by the user<br/>
     Closed answer object:
     ```
     {
@@ -104,8 +104,8 @@
         "mandatory": 0
     }
     ```
-  - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
-  - response body content: *none* in case of success, error object in case of error<br/>
+  - **response**: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
+  - **response body content**: *none* in case of success, error object in case of error<br/>
     ```
     {
         "info": "The server cannot process the request",
@@ -131,9 +131,9 @@
     }
     ```
 - POST `/api/createSurvey`
-  - description: create the survey entry in the database with the corresponding questions
-  - request parameters: *none*
-  - request body: object describing the new survey (`owner` is the admin currently logged in)
+  - **description**: create the survey entry in the database with the corresponding questions
+  - **request parameters**: *none*
+  - **request body**: object describing the new survey (`owner` is the admin currently logged in)
     ```
     {
         "title": "Survey title",
@@ -161,8 +161,8 @@
         "owner": 2
     }
     ```
-  - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
-  - response body content: *none* in case of success, error object in case of error (in `title` or `owner`) or *none* in case of error in at least one of the questions passed in the request object
+  - **response**: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
+  - **response body content**: *none* in case of success, error object in case of error (in `title` or `owner`) or *none* in case of error in at least one of the questions passed in the request object
     ```
     {
         "info": "The server cannot process the request",
@@ -179,10 +179,10 @@
     }
     ```
 - GET `/api/surveys/admin/:id`
-  - description: get all surveys created by the admin logged in
-  - request parameters: `id` of the admin
-  - response: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
-  - response body content: array of objects, each describing a surveys created by the admin logged in (id, title and number of answers); error object in case of error<br/>
+  - **description**: get all surveys created by the admin logged in
+  - **request parameters**: `id` of the admin
+  - **response**: `200 OK` (success), `400 Bad Request` (error in passed parameter) or `500 Internal Server Error` (generic error)
+  - **response body content**: array of objects, each describing a surveys created by the admin logged in (id, title and number of answers); error object in case of error<br/>
     Successful response:
     ```
     [{
@@ -206,10 +206,10 @@
     }
     ```
 - GET `/api/survey/:surveyId/admin/:adminId`
-  - description: get all questions related to the survey with the corresponding `surveyId` created by the admin with the corresponding `adminId`
-  - request parameters: `surveyId` of the survey and `adminId` of the admin
-  - response: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
-  - response body content: object of array of objects, each one describing the answers of the survey given by a user (each key represents a `groupId` and the value associated is the array with the answers given by the user); error object in case of error<br/>
+  - **description**: get all questions related to the survey with the corresponding `surveyId` created by the admin with the corresponding `adminId`
+  - **request parameters**: `surveyId` of the survey and `adminId` of the admin
+  - **response**: `200 OK` (success), `400 Bad Request` (error in passed parameters) or `500 Internal Server Error` (generic error)
+  - **response body content**: object of array of objects, each one describing the answers of the survey given by a user (each key represents a `groupId` and the value associated is the array with the answers given by the user); error object in case of error<br/>
     Successful response:
     ```
     {
@@ -274,17 +274,17 @@
     ```
 
 - POST `/api/sessions`
-  - description: request to log in an admin
-  - request parameters: *none*
-  - request body: object describing the user
+  - **description**: request to log in an admin
+  - **request parameters**: *none*
+  - **request body**: object describing the user
     ```
     {
         "username": "john@polito.it",
         "password": "1234abcd"
     }
     ```
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)  
-  - response body content: user if the login was successful, error otherwise<br/>
+  - **response**: `200 OK` (success) or `500 Internal Server Error` (generic error)  
+  - **response body content**: user if the login was successful, error otherwise<br/>
     Successful login:
     ```
     {
@@ -300,15 +300,15 @@
     }
     ```
 - DELETE `/api/sessions/current`
-  - description: request to log out an admin
-  - request parameters: *none*
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)
-  - response body content: *none*
+  - **description**: request to log out an admin
+  - **request parameters**: *none*
+  - **response**: `200 OK` (success) or `500 Internal Server Error` (generic error)
+  - **response body content**: *none*
 - GET `/api/sessions/current`
-  - description: get the status about the user, if he/she is logged in or not
-  - request parameters: *none*
-  - response: `200 OK` (success) or `401 Unauthorized` (authentication error)  
-  - response body content: user if he/she is logged in, error otherwise<br/>
+  - **description**: get the status about the user, if he/she is logged in or not
+  - **request parameters**: *none*
+  - **response**: `200 OK` (success) or `401 Unauthorized` (authentication error)  
+  - **response body content**: user if he/she is logged in, error otherwise<br/>
     User already logged in:
     ```
     {
