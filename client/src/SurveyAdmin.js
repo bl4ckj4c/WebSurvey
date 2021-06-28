@@ -661,7 +661,7 @@ function QuestionAdmin(props) {
                         </Col>
                         <Col sm="2">
                             <CloseButton
-                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions.props.setNumAnswers)}/>
+                                onClick={() => deleteQuestion(props.question.position, props.setQuestions, props.questions, props.setNumAnswers)}/>
                         </Col>
                     </Row>
                 </Card.Header>
