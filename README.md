@@ -13,11 +13,11 @@
 
 ## API Server
 
-- GET `/api/surveys`
-  - description: get all surveys that a user can fill
-  - request parameters: *none*
-  - response: `200 OK` (success) or `500 Internal Server Error` (generic error)
-  - response body content: array of objects, each describing a surveys available (id and title)
+- **GET** `/api/surveys`
+  - **description**: get all surveys that a user can fill
+  - **request parameters**: *none*
+  - **response**: `200 OK` (success) or `500 Internal Server Error` (generic error)
+  - **response body content**: array of objects, each describing a surveys available (id and title)
     ```
     [{
         "id": 1,
