@@ -1,5 +1,6 @@
-# Exam #1: "Survey"
-## Student: s281949 Marino Jacopo 
+# WebSurvey
+## Description
+Web application for managing the creation of an online survey and the collection of responses through that survey.
 
 ## React Client Application Routes
 
